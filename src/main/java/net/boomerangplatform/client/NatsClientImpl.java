@@ -20,17 +20,17 @@ public class NatsClientImpl implements NatsClient {
 
   private static final Logger LOGGER = Logger.getLogger(NatsClientImpl.class.getName());
 
-  @Value("${actionlistener.nats.url}")
+  @Value("${eventing.nats.url}")
   private String natsUrl;
 
-  @Value("${actionlistener.nats.cluster}")
+  @Value("${eventing.nats.cluster}")
   private String natsCluster;
 
   @Override
   public void publishMessage(Event event, String action) {
     try {
       StreamingConnectionFactory cf =
-          new StreamingConnectionFactory(natsCluster, "action-listener");
+          new StreamingConnectionFactory(natsCluster, "listener");
       cf.setNatsUrl(natsUrl);
 
       EventPayload eventPayload = new EventPayload();
@@ -43,6 +43,26 @@ public class NatsClientImpl implements NatsClient {
         String json =
             objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(eventPayload);
         sc.publish(action, json.getBytes(StandardCharsets.UTF_8));
+      }
+
+    } catch (IOException e) {
+      LOGGER.log(Level.SEVERE, "Error: ", e);
+    } catch (InterruptedException | TimeoutException ex) {
+      Thread.currentThread().interrupt();
+      LOGGER.log(Level.SEVERE, "Error: ", ex);
+    }
+
+  }
+
+  @Override
+  public void publishMessage(String subject, String jsonPayload) {
+    try {
+      StreamingConnectionFactory cf =
+          new StreamingConnectionFactory(natsCluster, "listener");
+      cf.setNatsUrl(natsUrl);
+
+      try (StreamingConnection sc = cf.createConnection()) {
+        sc.publish(subject, jsonPayload.getBytes(StandardCharsets.UTF_8));
       }
 
     } catch (IOException e) {
