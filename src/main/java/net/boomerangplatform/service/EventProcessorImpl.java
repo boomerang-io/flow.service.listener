@@ -52,4 +52,6 @@ public class EventProcessorImpl implements EventProcessor {
     LOGGER.info("CloudEvent Object - " + jsonPayload);
     natsClient.publishMessage(subject, jsonPayload);
   }
+  
+//   TODO: implement wrapper for publishMessage that handles either HTTP or NATS depending on variable
 }

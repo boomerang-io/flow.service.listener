@@ -20,18 +20,15 @@ public class NatsClientImpl implements NatsClient {
 
   private static final Logger LOGGER = Logger.getLogger(NatsClientImpl.class.getName());
 
-  @Value("${eventing.nats.url}")
-  private String natsUrl;
-
   @Value("${eventing.nats.cluster}")
   private String natsCluster;
 
   @Override
   public void publishMessage(Event event, String action) {
     try {
+//      TODO do we need make the clientId unique to this running instance in case we run in HA?
       StreamingConnectionFactory cf =
           new StreamingConnectionFactory(natsCluster, "listener");
-      cf.setNatsUrl(natsUrl);
 
       EventPayload eventPayload = new EventPayload();
       eventPayload.setEvent(event);
@@ -57,9 +54,9 @@ public class NatsClientImpl implements NatsClient {
   @Override
   public void publishMessage(String subject, String jsonPayload) {
     try {
+//    TODO do we need make the clientId unique to this running instance in case we run in HA?
       StreamingConnectionFactory cf =
           new StreamingConnectionFactory(natsCluster, "listener");
-      cf.setNatsUrl(natsUrl);
 
       try (StreamingConnection sc = cf.createConnection()) {
         sc.publish(subject, jsonPayload.getBytes(StandardCharsets.UTF_8));
@@ -71,6 +68,7 @@ public class NatsClientImpl implements NatsClient {
       Thread.currentThread().interrupt();
       LOGGER.log(Level.SEVERE, "Error: ", ex);
     }
+//    Do we need a finally with sc.close()
 
   }
 }
