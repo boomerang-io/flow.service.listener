@@ -7,11 +7,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.fasterxml.jackson.databind.JsonNode;
-import net.boomerangplatform.model.Event;
 import net.boomerangplatform.service.EventProcessor;
 
 @RestController
@@ -20,19 +18,33 @@ public class EventController {
 
   @Autowired
   private EventProcessor eventProcessor;
-
-  @PostMapping(value = "/payload")
-  public ResponseEntity<HttpStatus> acceptPayload(
-      @RequestHeader(value = "X-Core-Event") String coreEvent, @RequestBody Event event) {
-
-    eventProcessor.routeEvent(coreEvent, event);
+  
+  /*
+   * Accepts the Webhook style. 
+   * Note: Only partially conformant to the specification.
+   * https://github.com/cloudevents/spec/blob/master/http-webhook.md
+   */
+  @PostMapping(value = "/webhook", consumes = "application/json; charset=utf-8")
+  public ResponseEntity<HttpStatus> acceptWebhookEvent(HttpServletRequest request, @RequestBody JsonNode payload) {
+    eventProcessor.routeEvent(request.getRequestURL().toString(), "webhook", payload.path("workflowId").asText(), payload);
 
     return ResponseEntity.ok(HttpStatus.OK);
   }
   
+  @PostMapping(value = "/webhook/{workflowId}", consumes = "application/json; charset=utf-8")
+  public ResponseEntity<HttpStatus> acceptWebhookEvent(HttpServletRequest request, @PathVariable String workflowId, @RequestBody JsonNode payload) {
+    eventProcessor.routeEvent(request.getRequestURL().toString(), "webhook", workflowId, payload);
+
+    return ResponseEntity.ok(HttpStatus.OK);
+  }
+  
+  /*
+   * Accepts the following style of Dockerhub payload
+   * https://docs.docker.com/docker-hub/webhooks/
+   */
   @PostMapping(value = "/dockerhub/{workflowId}", consumes = "application/json; charset=utf-8")
   public ResponseEntity<HttpStatus> acceptDockerhubEvent(HttpServletRequest request, @PathVariable String workflowId, @RequestBody JsonNode payload) {
-    eventProcessor.routeCloudEvent(request.getRequestURL().toString(), "dockerhub", workflowId, payload);
+    eventProcessor.routeEvent(request.getRequestURL().toString(), "dockerhub", workflowId, payload);
 
     return ResponseEntity.ok(HttpStatus.OK);
   }
