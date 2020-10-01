@@ -18,7 +18,7 @@ import net.boomerangplatform.client.WorkflowClient;
 @Service
 public class EventProcessorImpl implements EventProcessor {
 
-  protected static final String TYPE_DNS = "io.boomerang.eventing.";
+  protected static final String TYPE_PREFIX = "io.boomerang.eventing.";
   
   protected static final String SUBJECT = "flow-workflow-execute";
   
@@ -36,7 +36,7 @@ public class EventProcessorImpl implements EventProcessor {
   @Override
   public void routeEvent(String requestUri, String target, String workflowId, JsonNode payload) {
     final String eventId = UUID.randomUUID().toString();
-    final String eventType = TYPE_DNS + target;
+    final String eventType = TYPE_PREFIX + target;
     final URI uri = URI.create(requestUri);
         
     final CloudEventImpl<JsonNode> cloudEvent =
