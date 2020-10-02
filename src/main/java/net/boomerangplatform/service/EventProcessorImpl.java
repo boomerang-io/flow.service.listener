@@ -8,11 +8,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.cloudevents.CloudEvent;
 import io.cloudevents.json.Json;
@@ -85,6 +81,7 @@ public class EventProcessorImpl implements EventProcessor {
     String subject = event.getAttributes().getSubject().orElse("");
     if (!subject.startsWith("/")) {
       subject = "/" + subject;
+//      TODO should probably error at this point
     }
     
     final CloudEventImpl<JsonNode> cloudEvent =
