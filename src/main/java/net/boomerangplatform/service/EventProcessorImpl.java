@@ -2,16 +2,24 @@ package net.boomerangplatform.service;
 
 import java.net.URI;
 import java.time.ZonedDateTime;
+import java.util.Map;
 import java.util.UUID;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import com.fasterxml.jackson.databind.JsonNode;
+import io.cloudevents.CloudEvent;
 import io.cloudevents.json.Json;
+import io.cloudevents.v1.AttributesImpl;
 import io.cloudevents.v1.CloudEventBuilder;
 import io.cloudevents.v1.CloudEventImpl;
+import io.cloudevents.v1.http.Unmarshallers;
 import net.boomerangplatform.client.NatsClient;
 import net.boomerangplatform.client.WorkflowClient;
 
@@ -25,7 +33,7 @@ public class EventProcessorImpl implements EventProcessor {
   @Value("${eventing.enabled}")
   private Boolean eventingEnabled;
 
-  private static final Logger LOGGER = LogManager.getLogger(EventProcessorImpl.class);
+  private static final Logger logger = LogManager.getLogger(EventProcessorImpl.class);
 
   @Autowired
   private NatsClient natsClient;
@@ -38,6 +46,7 @@ public class EventProcessorImpl implements EventProcessor {
     final String eventId = UUID.randomUUID().toString();
     final String eventType = TYPE_PREFIX + target;
     final URI uri = URI.create(requestUri);
+    final String subject = "/" + workflowId;
         
     final CloudEventImpl<JsonNode> cloudEvent =
     CloudEventBuilder.<JsonNode>builder()
@@ -45,14 +54,53 @@ public class EventProcessorImpl implements EventProcessor {
       .withId(eventId)
       .withSource(uri)
       .withData(payload)
-      .withSubject(workflowId)
+      .withSubject(subject)
       .withTime(ZonedDateTime.now())
       .build();
 
     final String jsonPayload = Json.encode(cloudEvent);
-    LOGGER.info("CloudEvent Object - " + jsonPayload);
+    logger.info("CloudEvent Object - " + jsonPayload);
     if (eventingEnabled) {
-      natsClient.publish(SUBJECT, jsonPayload);
+      natsClient.publish(eventId, SUBJECT, jsonPayload);
+    } else {
+      wfClient.executeWorkflowPut(SUBJECT, cloudEvent);
+    }
+  }
+  
+  @Override
+  public void routeCloudEvent(String requestUri, Map<String, Object> headers, JsonNode payload) {
+
+    logger.info("routeCloudEvent() - Event as Message String: " + payload.toString());
+    
+    CloudEvent<AttributesImpl, JsonNode> event = Unmarshallers.structured(JsonNode.class)
+        .withHeaders(() -> headers).withPayload(() -> payload.toString()).unmarshal();
+
+    logger.info("routeCloudEvent() - Attributes: " + event.getAttributes().toString());
+    JsonNode eventData = event.getData().get();
+    logger.info("routeCloudEvent() - Data: " + eventData.toPrettyString());
+
+    final String eventId = UUID.randomUUID().toString();
+    final String eventType = TYPE_PREFIX + "custom";
+    final URI uri = URI.create(requestUri);
+    String subject = event.getAttributes().getSubject().orElse("");
+    if (!subject.startsWith("/")) {
+      subject = "/" + subject;
+    }
+    
+    final CloudEventImpl<JsonNode> cloudEvent =
+    CloudEventBuilder.<JsonNode>builder()
+      .withType(eventType)
+      .withId(eventId)
+      .withSource(uri)
+      .withData(payload)
+      .withSubject(subject)
+      .withTime(ZonedDateTime.now())
+      .build();
+
+    final String jsonPayload = Json.encode(cloudEvent);
+    logger.info("CloudEvent Object - " + jsonPayload);
+    if (eventingEnabled) {
+      natsClient.publish(eventId, SUBJECT, jsonPayload);
     } else {
       wfClient.executeWorkflowPut(SUBJECT, cloudEvent);
     }
