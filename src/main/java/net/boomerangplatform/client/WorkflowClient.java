@@ -5,5 +5,5 @@ import io.cloudevents.v1.CloudEventImpl;
 
 public interface WorkflowClient {
 
-  void executeWorkflowPut(String subject, CloudEventImpl<JsonNode> jsonPayload, String workflowId);
+  void executeWorkflowPut(String subject, CloudEventImpl<JsonNode> jsonPayload);
 }

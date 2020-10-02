@@ -52,9 +52,9 @@ public class EventProcessorImpl implements EventProcessor {
     final String jsonPayload = Json.encode(cloudEvent);
     LOGGER.info("CloudEvent Object - " + jsonPayload);
     if (eventingEnabled) {
-      natsClient.publishMessage(SUBJECT, jsonPayload);
+      natsClient.publish(SUBJECT, jsonPayload);
     } else {
-      wfClient.executeWorkflowPut(SUBJECT, cloudEvent, workflowId);
+      wfClient.executeWorkflowPut(SUBJECT, cloudEvent);
     }
   }
 }

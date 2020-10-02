@@ -27,7 +27,7 @@ public class NatsClientImpl implements NatsClient {
    * Publishes CloudEvent payload to NATS
    * https://github.com/cloudevents/spec/blob/master/nats-protocol-binding.md
    */
-  public void publishMessage(String subject, String jsonPayload) {
+  public void publish(String subject, String jsonPayload) {
     try {
       StreamingConnectionFactory cf = getStreamingConnectionFactory();
 

@@ -32,10 +32,7 @@ public class WorkflowClientImpl implements WorkflowClient {
 
 //	TODO return a wfActivityId
 	@Override
-	public void executeWorkflowPut(String subject, CloudEventImpl<JsonNode> jsonPayload, String workflowId) {
-//	  TODO work through the endpoint on workflow service
-		String url = executeWorkflowUrl.replace("{workflow.id}", workflowId);
-
+	public void executeWorkflowPut(String subject, CloudEventImpl<JsonNode> jsonPayload) {
 		final HttpHeaders headers = new HttpHeaders();
 		headers.add("Authorization", "Bearer " + apiTokenService.createJWTToken());
 		headers.add("Content-Type", "application/cloudevents+json");
@@ -43,7 +40,7 @@ public class WorkflowClientImpl implements WorkflowClient {
 		
 		LOGGER.info("executeWorkflowPut() - Request: " + req.toString());
 	
-		ResponseEntity<String> responseEntity = restTemplate.exchange(url, HttpMethod.PUT, req, String.class);
+		ResponseEntity<String> responseEntity = restTemplate.exchange(executeWorkflowUrl, HttpMethod.PUT, req, String.class);
 		
 		LOGGER.info("postWebhookEvent() - Status Code: " + responseEntity.getStatusCode());
 		
