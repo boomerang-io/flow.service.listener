@@ -57,6 +57,4 @@ public class EventProcessorImpl implements EventProcessor {
       wfClient.executeWorkflowPut(SUBJECT, cloudEvent, workflowId);
     }
   }
-  
-//   TODO: implement wrapper for publishMessage that handles either HTTP or NATS depending on variable
 }

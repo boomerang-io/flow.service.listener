@@ -30,9 +30,10 @@ public class WorkflowClientImpl implements WorkflowClient {
 	@Qualifier("internalRestTemplate")
 	private RestTemplate restTemplate;
 
-//	todo return a wfActivityId
+//	TODO return a wfActivityId
 	@Override
 	public void executeWorkflowPut(String subject, CloudEventImpl<JsonNode> jsonPayload, String workflowId) {
+//	  TODO work through the endpoint on workflow service
 		String url = executeWorkflowUrl.replace("{workflow.id}", workflowId);
 
 		final HttpHeaders headers = new HttpHeaders();
@@ -52,6 +53,11 @@ public class WorkflowClientImpl implements WorkflowClient {
 //		  response.setActivityId(activity.getId());
 //		}
 //		return response;
+	}
+	
+//	TODO Token Check via internal endpoint
+	public Boolean workflowTokenCheck(String subject, String workflowId) {
+	  return true;
 	}
 
 //

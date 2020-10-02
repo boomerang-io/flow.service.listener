@@ -24,6 +24,7 @@ public class EventController {
    * Note: Only partially conformant to the specification.
    * https://github.com/cloudevents/spec/blob/master/http-webhook.md
    */
+  @Deprecated
   @PostMapping(value = "/webhook", consumes = "application/json; charset=utf-8")
   public ResponseEntity<HttpStatus> acceptWebhookEvent(HttpServletRequest request, @RequestBody JsonNode payload) {
     eventProcessor.routeEvent(request.getRequestURL().toString(), "webhook", payload.path("workflowId").asText(), payload);
