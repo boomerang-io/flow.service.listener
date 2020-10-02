@@ -31,23 +31,26 @@ public class NatsClientImpl implements NatsClient {
     try {
       StreamingConnectionFactory cf = getStreamingConnectionFactory();
 
-      try (StreamingConnection sc = cf.createConnection()) {
-        sc.publish(subject, jsonPayload.getBytes(StandardCharsets.UTF_8));
-      }
+      StreamingConnection sc = cf.createConnection();
+      sc.publish(subject, jsonPayload.getBytes(StandardCharsets.UTF_8));
 
     } catch (IOException e) {
       LOGGER.log(Level.SEVERE, "Error: ", e);
     } catch (InterruptedException | TimeoutException ex) {
       Thread.currentThread().interrupt();
       LOGGER.log(Level.SEVERE, "Error: ", ex);
-    }
+    } 
+    
 //    Do we need a finally with sc.close()
 
   }
 
   private StreamingConnectionFactory getStreamingConnectionFactory() {
-//  TODO do we need make the clientId unique to this running instance in case we run in HA?
-    Options cfOptions = new Options.Builder().natsUrl(natsUrl).clusterId(natsCluster).clientId("listener").build();
+    LOGGER.info("Initializng subscriptions to NATS");
+
+    int random = (int) (Math.random() * 10000 + 1); // NOSONAR
+    
+    Options cfOptions = new Options.Builder().natsUrl(natsUrl).clusterId(natsCluster).clientId("listener-"+random).build();
     StreamingConnectionFactory cf =
         new StreamingConnectionFactory(cfOptions);
     return cf;
