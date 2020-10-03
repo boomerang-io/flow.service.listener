@@ -2,10 +2,7 @@ package net.boomerangplatform.controller;
 
 import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -14,10 +11,8 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import com.fasterxml.jackson.databind.JsonNode;
-import net.boomerangplatform.client.WorkflowClient;
 import net.boomerangplatform.service.EventProcessor;
 
 @RestController
@@ -55,7 +50,7 @@ public class EventController {
    * https://docs.docker.com/docker-hub/webhooks/
    */
   @PostMapping(value = "/dockerhub/{workflowId}", consumes = "application/json; charset=utf-8")
-  public ResponseEntity<HttpStatus> acceptDockerhubEvent(HttpServletRequest request, @RequestHeader Map<String, Object> headers, @RequestParam String accessToken, @PathVariable String workflowId, @RequestBody JsonNode payload) {
+  public ResponseEntity<HttpStatus> acceptDockerhubEvent(HttpServletRequest request, @PathVariable String workflowId, @RequestBody JsonNode payload) {
     eventProcessor.routeEvent(getToken(request), request.getRequestURL().toString(), "dockerhub", workflowId, payload);
     return ResponseEntity.ok(HttpStatus.OK);
   }

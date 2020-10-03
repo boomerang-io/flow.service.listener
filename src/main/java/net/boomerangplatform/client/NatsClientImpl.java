@@ -6,16 +6,10 @@ import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.event.ContextRefreshedEvent;
-import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
-import io.nats.streaming.Message;
-import io.nats.streaming.MessageHandler;
 import io.nats.streaming.Options;
 import io.nats.streaming.StreamingConnection;
 import io.nats.streaming.StreamingConnectionFactory;
-import io.nats.streaming.Subscription;
-import io.nats.streaming.SubscriptionOptions;
 
 @Service
 public class NatsClientImpl implements NatsClient {
