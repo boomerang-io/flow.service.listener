@@ -69,7 +69,7 @@ public class WorkflowClientImpl implements WorkflowClient {
 
       ResponseEntity<String> responseEntity =
           restTemplate.exchange(validateTokenWorkflowUrl.replace("{workflowId}", workflowId)
-              .replace("{trigger}", trigger), HttpMethod.GET, req, String.class);
+              .replace("{trigger}", trigger), HttpMethod.POST, req, String.class);
 
       LOGGER.info("workflowTriggerTokenCheck() - Status Code: " + responseEntity.getStatusCode());
 

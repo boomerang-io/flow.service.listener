@@ -55,6 +55,12 @@ public class EventController {
     return ResponseEntity.ok(HttpStatus.OK);
   }
   
+  /*
+   * Accepts any JSON Cloud Event
+   * This will map to the custom trigger but the topic will come from the CloudEvent subject
+   * https://github.com/cloudevents/spec/blob/v1.0/json-format.md
+   * https://github.com/cloudevents/spec/blob/v1.0/http-protocol-binding.md
+   */
   @PutMapping(value = "/event", consumes = "application/cloudevents+json; charset=utf-8")
   public ResponseEntity<HttpStatus> acceptEvent(HttpServletRequest request, @RequestHeader Map<String, Object> headers, @RequestBody JsonNode payload) {
     eventProcessor.routeCloudEvent(getToken(request), request.getRequestURL().toString(), headers, payload);
