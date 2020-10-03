@@ -8,6 +8,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.cloudevents.CloudEvent;
@@ -22,6 +23,8 @@ import net.boomerangplatform.client.WorkflowClient;
 @Service
 public class EventProcessorImpl implements EventProcessor {
 
+  private static final Logger logger = LogManager.getLogger(EventProcessorImpl.class);
+
   protected static final String TYPE_PREFIX = "io.boomerang.eventing.";
   
   protected static final String SUBJECT = "flow-workflow-execute";
@@ -29,7 +32,8 @@ public class EventProcessorImpl implements EventProcessor {
   @Value("${eventing.enabled}")
   private Boolean eventingEnabled;
 
-  private static final Logger logger = LogManager.getLogger(EventProcessorImpl.class);
+  @Value("${eventing.auth.enabled}")
+  private Boolean authzEnabled;
 
   @Autowired
   private NatsClient natsClient;
@@ -38,11 +42,15 @@ public class EventProcessorImpl implements EventProcessor {
   private WorkflowClient workflowClient;
 
   @Override
-  public void routeEvent(String requestUri, String target, String workflowId, JsonNode payload) {
+  public HttpStatus routeEvent(String token, String requestUri, String trigger, String workflowId, JsonNode payload) {
     final String eventId = UUID.randomUUID().toString();
-    final String eventType = TYPE_PREFIX + target;
+    final String eventType = TYPE_PREFIX + trigger;
     final URI uri = URI.create(requestUri);
     final String subject = "/" + workflowId;
+    
+    if (!checkAccess(workflowId, trigger, token)) {
+      return HttpStatus.FORBIDDEN;
+    }
         
     final CloudEventImpl<JsonNode> cloudEvent =
     CloudEventBuilder.<JsonNode>builder()
@@ -61,10 +69,12 @@ public class EventProcessorImpl implements EventProcessor {
     } else {
       workflowClient.executeWorkflowPut(SUBJECT, cloudEvent);
     }
+    
+    return HttpStatus.OK;
   }
   
   @Override
-  public void routeCloudEvent(String requestUri, Map<String, Object> headers, JsonNode payload) {
+  public HttpStatus routeCloudEvent(String token, String requestUri, Map<String, Object> headers, JsonNode payload) {
 
     logger.info("routeCloudEvent() - Event as Message String: " + payload.toString());
     
@@ -80,8 +90,11 @@ public class EventProcessorImpl implements EventProcessor {
     final URI uri = URI.create(requestUri);
     String subject = event.getAttributes().getSubject().orElse("");
     if (!subject.startsWith("/")) {
-      subject = "/" + subject;
-//      TODO should probably error at this point
+      return HttpStatus.BAD_REQUEST;
+    }
+    
+    if (!checkAccess(getWorkflowIdFromSubject(subject), "custom", token)) {
+      return HttpStatus.FORBIDDEN;
     }
     
     final CloudEventImpl<JsonNode> cloudEvent =
@@ -100,6 +113,31 @@ public class EventProcessorImpl implements EventProcessor {
       natsClient.publish(eventId, SUBJECT, jsonPayload);
     } else {
       workflowClient.executeWorkflowPut(SUBJECT, cloudEvent);
+    }
+    
+    return HttpStatus.OK;
+  }
+  
+  //@RequestHeader("Authorization") String token
+  //@RequestParam("access_token") String token
+  //TODO replace with SecurityConfig and SecurityFilter
+  private Boolean checkAccess(String workflowId, String trigger, String token) {
+    if (authzEnabled) {
+        logger.info("checkAccess() - Token: " + token);
+        return workflowClient.validateTriggerToken(workflowId, trigger, token);
+      } else {
+        return true;
+      }
+  }
+
+  private String getWorkflowIdFromSubject(String subject) {
+    // Reference 0 will be an empty string as it is the left hand side of the split
+    String[] splitArr = subject.split("/");
+    if (splitArr.length >= 2) {
+      return splitArr[1].toString();
+    } else {
+      logger.error("processCloudEvent() - Error: No workflow ID found in event");
+      return "";
     }
   }
 }

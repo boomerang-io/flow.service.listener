@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import com.fasterxml.jackson.databind.JsonNode;
 import net.boomerangplatform.client.WorkflowClient;
@@ -22,17 +23,13 @@ import net.boomerangplatform.service.EventProcessor;
 @RestController
 @RequestMapping("/listener")
 public class EventController {
-
-  @Value("${eventing.auth.enabled}")
-  private Boolean authzEnabled;
+  
+  protected static final String TOKEN_HEADER = "Authorization";
+      
+  protected static final String TOKEN_PARAM = "access_token";
 
   @Autowired
   private EventProcessor eventProcessor;
-  
-  @Autowired
-  private WorkflowClient workflowClient;
-
-  private static final Logger logger = LogManager.getLogger(EventController.class);
   
   /*
    * Accepts the Webhook style. 
@@ -42,15 +39,14 @@ public class EventController {
   @Deprecated
   @PostMapping(value = "/webhook", consumes = "application/json; charset=utf-8")
   public ResponseEntity<HttpStatus> acceptWebhookEvent(HttpServletRequest request, @RequestBody JsonNode payload) {
-    eventProcessor.routeEvent(request.getRequestURL().toString(), "webhook", payload.path("workflowId").asText(), payload);
+    eventProcessor.routeEvent(getToken(request), request.getRequestURL().toString(), "webhook", payload.path("workflowId").asText(), payload);
 
     return ResponseEntity.ok(HttpStatus.OK);
   }
   
   @PostMapping(value = "/webhook/{workflowId}", consumes = "application/json; charset=utf-8")
   public ResponseEntity<HttpStatus> acceptWebhookEvent(HttpServletRequest request, @PathVariable String workflowId, @RequestBody JsonNode payload) {
-    eventProcessor.routeEvent(request.getRequestURL().toString(), "webhook", workflowId, payload);
-
+    eventProcessor.routeEvent(getToken(request), request.getRequestURL().toString(), "webhook", workflowId, payload);
     return ResponseEntity.ok(HttpStatus.OK);
   }
   
@@ -59,41 +55,24 @@ public class EventController {
    * https://docs.docker.com/docker-hub/webhooks/
    */
   @PostMapping(value = "/dockerhub/{workflowId}", consumes = "application/json; charset=utf-8")
-  public ResponseEntity<HttpStatus> acceptDockerhubEvent(HttpServletRequest request, @PathVariable String workflowId, @RequestBody JsonNode payload) {
-    if (checkAccess(request, workflowId, "dockerhub")) {
-      eventProcessor.routeEvent(request.getRequestURL().toString(), "dockerhub", workflowId, payload);
-    } else {
-      return ResponseEntity.ok(HttpStatus.FORBIDDEN);
-    }
-
+  public ResponseEntity<HttpStatus> acceptDockerhubEvent(HttpServletRequest request, @RequestHeader Map<String, Object> headers, @RequestParam String accessToken, @PathVariable String workflowId, @RequestBody JsonNode payload) {
+    eventProcessor.routeEvent(getToken(request), request.getRequestURL().toString(), "dockerhub", workflowId, payload);
     return ResponseEntity.ok(HttpStatus.OK);
   }
   
   @PutMapping(value = "/event", consumes = "application/cloudevents+json; charset=utf-8")
-  public ResponseEntity<HttpStatus> acceptWebhookEvent(HttpServletRequest request, @RequestHeader Map<String, Object> headers, @RequestBody JsonNode payload) {
-    eventProcessor.routeCloudEvent(request.getRequestURL().toString(), headers, payload);
-
+  public ResponseEntity<HttpStatus> acceptEvent(HttpServletRequest request, @RequestHeader Map<String, Object> headers, @RequestBody JsonNode payload) {
+    eventProcessor.routeCloudEvent(getToken(request), request.getRequestURL().toString(), headers, payload);
     return ResponseEntity.ok(HttpStatus.OK);
   }
   
-//  @RequestHeader("Authorization") String token
-//  @RequestParam("access_token") String token
-//  TODO replace with SecurityConfig and SecurityFilter
-  private Boolean checkAccess(HttpServletRequest request, String workflowId, String trigger) {
-    if (authzEnabled) {
-      if (request.getHeader("Authorization") != null && !request.getHeader("Authorization").isEmpty()) {
-        String token = request.getHeader("Authorization").replace("Bearer ", "");
-        logger.info("checkAccess() - Token: " + token);
-        return workflowClient.validateTriggerToken(workflowId, trigger, token);
-      } else if (request.getParameter("access_token") != null && !request.getParameter("access_token").isEmpty()) {
-        String token = request.getParameter("access_token");
-        logger.info("checkAccess() - Token: " + token);
-        return workflowClient.validateTriggerToken(workflowId, trigger, token);
-      } else {
-        return false;
-      }
-      } else {
-        return true;
-      }
+  private String getToken(HttpServletRequest request) {
+    if (request.getHeader(TOKEN_HEADER) != null && !request.getHeader(TOKEN_HEADER).isEmpty()) {
+      return request.getHeader(TOKEN_HEADER).replace("Bearer ", "");
+    } else if (request.getParameter(TOKEN_PARAM) != null && !request.getParameter(TOKEN_PARAM).isEmpty()) {
+      return request.getParameter(TOKEN_PARAM);
+    } else {
+      return "";
+    }
   }
 }
