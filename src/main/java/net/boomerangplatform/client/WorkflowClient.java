@@ -6,4 +6,6 @@ import io.cloudevents.v1.CloudEventImpl;
 public interface WorkflowClient {
 
   void executeWorkflowPut(String subject, CloudEventImpl<JsonNode> jsonPayload);
+
+  Boolean workflowTriggerTokenCheck(String workflowId, String trigger, String token);
 }
