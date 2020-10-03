@@ -7,5 +7,5 @@ public interface WorkflowClient {
 
   void executeWorkflowPut(String subject, CloudEventImpl<JsonNode> jsonPayload);
 
-  Boolean workflowTriggerTokenCheck(String workflowId, String trigger, String token);
+  Boolean validateTriggerToken(String workflowId, String trigger, String token);
 }

@@ -35,7 +35,7 @@ public class EventProcessorImpl implements EventProcessor {
   private NatsClient natsClient;
   
   @Autowired
-  private WorkflowClient wfClient;
+  private WorkflowClient workflowClient;
 
   @Override
   public void routeEvent(String requestUri, String target, String workflowId, JsonNode payload) {
@@ -59,7 +59,7 @@ public class EventProcessorImpl implements EventProcessor {
     if (eventingEnabled) {
       natsClient.publish(eventId, SUBJECT, jsonPayload);
     } else {
-      wfClient.executeWorkflowPut(SUBJECT, cloudEvent);
+      workflowClient.executeWorkflowPut(SUBJECT, cloudEvent);
     }
   }
   
@@ -99,7 +99,7 @@ public class EventProcessorImpl implements EventProcessor {
     if (eventingEnabled) {
       natsClient.publish(eventId, SUBJECT, jsonPayload);
     } else {
-      wfClient.executeWorkflowPut(SUBJECT, cloudEvent);
+      workflowClient.executeWorkflowPut(SUBJECT, cloudEvent);
     }
   }
 }

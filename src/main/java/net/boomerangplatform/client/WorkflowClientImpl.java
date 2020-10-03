@@ -58,7 +58,7 @@ public class WorkflowClientImpl implements WorkflowClient {
 	}
 	
     @Override
-    public Boolean workflowTriggerTokenCheck(String workflowId, String trigger, String token) {
+    public Boolean validateTriggerToken(String workflowId, String trigger, String token) {
       final HttpHeaders headers = new HttpHeaders();
       headers.add("Authorization", "Bearer " + apiTokenService.createJWTToken());
       headers.add("Content-Type", "application/json");
