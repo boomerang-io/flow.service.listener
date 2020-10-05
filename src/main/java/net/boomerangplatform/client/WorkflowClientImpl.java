@@ -15,7 +15,7 @@ import org.springframework.web.client.RestTemplate;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.cloudevents.v1.CloudEventImpl;
 import net.boomerangplatform.client.model.ValidateTokenRequest;
-import net.boomerangplatform.security.service.ApiTokenService;
+//import net.boomerangplatform.security.service.ApiTokenService;
 
 @Service
 public class WorkflowClientImpl implements WorkflowClient {
@@ -28,8 +28,8 @@ public class WorkflowClientImpl implements WorkflowClient {
 
 	private static final Logger LOGGER = LogManager.getLogger(WorkflowClientImpl.class);
 
-	@Autowired
-	private ApiTokenService apiTokenService;
+//	@Autowired
+//	private ApiTokenService apiTokenService;
 	
 	@Autowired
 	@Qualifier("internalRestTemplate")
@@ -39,7 +39,7 @@ public class WorkflowClientImpl implements WorkflowClient {
 	@Override
 	public void executeWorkflowPut(String subject, CloudEventImpl<JsonNode> jsonPayload) {
 		final HttpHeaders headers = new HttpHeaders();
-		headers.add("Authorization", "Bearer " + apiTokenService.createJWTToken());
+//		headers.add("Authorization", "Bearer " + apiTokenService.createJWTToken());
 		headers.add("Content-Type", "application/cloudevents+json");
 		final HttpEntity<CloudEventImpl<JsonNode>> req = new HttpEntity<>(jsonPayload, headers);
 		
@@ -60,7 +60,7 @@ public class WorkflowClientImpl implements WorkflowClient {
     @Override
     public Boolean validateTriggerToken(String workflowId, String trigger, String token) {
       final HttpHeaders headers = new HttpHeaders();
-      headers.add("Authorization", "Bearer " + apiTokenService.createJWTToken());
+//      headers.add("Authorization", "Bearer " + apiTokenService.createJWTToken());
       headers.add("Content-Type", "application/json");
 
       ValidateTokenRequest payload = new ValidateTokenRequest();
