@@ -48,9 +48,9 @@ public class EventProcessorImpl implements EventProcessor {
     final URI uri = URI.create(requestUri);
     final String subject = "/" + workflowId;
     
-    if (!checkAccess(workflowId, trigger, token)) {
-      return HttpStatus.FORBIDDEN;
-    }
+//    if (!checkAccess(workflowId, trigger, token)) {
+//      return HttpStatus.FORBIDDEN;
+//    }
         
     final CloudEventImpl<JsonNode> cloudEvent =
     CloudEventBuilder.<JsonNode>builder()
