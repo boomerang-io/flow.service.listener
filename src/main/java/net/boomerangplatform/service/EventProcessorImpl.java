@@ -123,11 +123,16 @@ public class EventProcessorImpl implements EventProcessor {
   //TODO replace with SecurityConfig and SecurityFilter
   private Boolean checkAccess(String workflowId, String trigger, String token) {
     if (authzEnabled) {
-        logger.info("checkAccess() - Token: " + token);
+      logger.info("checkAccess() - Token: " + token);
+      if (token != null) {
         return workflowClient.validateTriggerToken(workflowId, trigger, token);
       } else {
-        return true;
+        logger.error("checkAccess() - Error: no token provided.");
+        return false;
       }
+    } else {
+      return true;
+    }
   }
 
   private String getWorkflowIdFromSubject(String subject) {

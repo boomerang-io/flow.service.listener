@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import net.boomerangplatform.model.SlackEventPayload;
 import net.boomerangplatform.service.EventProcessor;
 
 @RestController
@@ -53,6 +55,26 @@ public class EventController {
   public ResponseEntity<HttpStatus> acceptDockerhubEvent(HttpServletRequest request, @PathVariable String workflowId, @RequestBody JsonNode payload) {
     eventProcessor.routeEvent(getToken(request), request.getRequestURL().toString(), "dockerhub", workflowId, payload);
     return ResponseEntity.ok(HttpStatus.OK);
+  }
+  
+  /*
+   * Accepts the custom Slack payload  
+   */
+  @PostMapping(path = "/slack/{workflowId}", consumes = "application/json; charset=utf-8")
+  public ResponseEntity<SlackEventPayload> submitSlackEvent(HttpServletRequest request, @PathVariable String workflowId, @RequestBody SlackEventPayload payload){
+    //TODO verify token
+    SlackEventPayload response = new SlackEventPayload();
+    if (payload != null && "url_verification".equals(payload.getType()) && payload.getChallenge()!= null) {
+      response.setChallenge(payload.getChallenge());
+      return ResponseEntity.ok(response);
+    } else if (payload != null && "event_callback".equals(payload.getType())) {
+      ObjectMapper mapper = new ObjectMapper(); 
+      JsonNode jsonPayload = mapper.convertValue(payload, JsonNode.class);
+      eventProcessor.routeEvent(getToken(request), request.getRequestURL().toString(), "slack", workflowId, jsonPayload);
+      return (ResponseEntity<SlackEventPayload>) ResponseEntity.ok();
+    }
+    
+    return (ResponseEntity<SlackEventPayload>) ResponseEntity.badRequest();
   }
   
   /*
