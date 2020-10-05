@@ -61,20 +61,20 @@ public class EventController {
    * Accepts the custom Slack payload  
    */
   @PostMapping(path = "/slack/{workflowId}", consumes = "application/json; charset=utf-8")
-  public ResponseEntity<SlackEventPayload> submitSlackEvent(HttpServletRequest request, @PathVariable String workflowId, @RequestBody SlackEventPayload payload){
+  public ResponseEntity<?> submitSlackEvent(HttpServletRequest request, @PathVariable String workflowId, @RequestBody JsonNode payload){
     //TODO verify token
     SlackEventPayload response = new SlackEventPayload();
-    if (payload != null && "url_verification".equals(payload.getType()) && payload.getChallenge()!= null) {
-      response.setChallenge(payload.getChallenge());
+    ObjectMapper mapper = new ObjectMapper(); 
+    SlackEventPayload jsonPayload = mapper.convertValue(payload, SlackEventPayload.class);
+    if (jsonPayload != null && "url_verification".equals(jsonPayload.getType()) && jsonPayload.getChallenge()!= null) {
+      response.setChallenge(jsonPayload.getChallenge());
       return ResponseEntity.ok(response);
-    } else if (payload != null && "event_callback".equals(payload.getType())) {
-      ObjectMapper mapper = new ObjectMapper(); 
-      JsonNode jsonPayload = mapper.convertValue(payload, JsonNode.class);
-      eventProcessor.routeEvent(getToken(request), request.getRequestURL().toString(), "slack", workflowId, jsonPayload);
-      return (ResponseEntity<SlackEventPayload>) ResponseEntity.ok();
+    } else if (payload != null && "event_callback".equals(payload.path("type").asText())) {
+      eventProcessor.routeEvent(getToken(request), request.getRequestURL().toString(), "slack", workflowId, payload);
+      return ResponseEntity.ok(HttpStatus.NO_CONTENT);
     }
     
-    return (ResponseEntity<SlackEventPayload>) ResponseEntity.badRequest();
+    return ResponseEntity.badRequest().build();
   }
   
   /*
