@@ -1,4 +1,4 @@
-package net.boomerangplatform.client;
+package io.boomerang.client;
 
 import java.util.concurrent.TimeoutException;
 

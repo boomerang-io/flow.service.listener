@@ -1,4 +1,4 @@
-package net.boomerangplatform.client;
+package io.boomerang.client;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.cloudevents.v1.CloudEventImpl;

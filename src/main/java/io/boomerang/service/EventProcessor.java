@@ -1,4 +1,4 @@
-package net.boomerangplatform.service;
+package io.boomerang.service;
 
 import java.util.Map;
 import org.springframework.http.HttpStatus;

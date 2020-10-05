@@ -1,4 +1,4 @@
-package net.boomerangplatform.client.model;
+package io.boomerang.client.model;
 
 public class ValidateTokenRequest {
 
