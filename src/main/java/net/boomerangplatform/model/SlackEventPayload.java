@@ -1,9 +1,9 @@
 package net.boomerangplatform.model;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
 
-@JsonInclude(Include.NON_NULL)
 public class SlackEventPayload {
   
 /*
@@ -40,5 +40,12 @@ public class SlackEventPayload {
 
   public void setType(String type) {
     this.type = type;
+  }
+  
+  Map<String, Object> details = new LinkedHashMap<>();
+  
+  @JsonAnySetter
+  void setDetail(String key, Object value) {
+      details.put(key, value);
   }
 }
