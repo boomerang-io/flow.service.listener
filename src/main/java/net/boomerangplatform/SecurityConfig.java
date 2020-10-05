@@ -29,7 +29,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
   @Value("${eventing.auth.enabled}")
   private Boolean authzEnabled;
  
-  private static final Logger logger = LogManager.getLogger(EventProcessorImpl.class);
+  private static final Logger logger = LogManager.getLogger(SecurityConfig.class);
 
   @Autowired
   private WorkflowClient workflowClient;

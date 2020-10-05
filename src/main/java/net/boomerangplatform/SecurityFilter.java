@@ -19,7 +19,7 @@ public class SecurityFilter extends BasicAuthenticationFilter {
       
   protected static final String TOKEN_PARAM = "access_token";
  
-  private static final Logger logger = LogManager.getLogger(EventProcessorImpl.class);
+  private static final Logger logger = LogManager.getLogger(SecurityFilter.class);
 
   private WorkflowClient workflowClient;
   
