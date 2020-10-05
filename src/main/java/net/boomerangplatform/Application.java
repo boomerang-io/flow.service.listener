@@ -1,4 +1,4 @@
-package io.boomerang;
+package net.boomerangplatform;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

@@ -9,7 +9,7 @@ import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import io.boomerang.Application;
+import net.boomerangplatform.Application;
 import net.boomerangplatform.MongoConfig;
 
 @RunWith(SpringJUnit4ClassRunner.class)

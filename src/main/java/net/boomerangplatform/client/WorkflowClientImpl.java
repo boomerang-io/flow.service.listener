@@ -1,4 +1,4 @@
-package io.boomerang.client;
+package net.boomerangplatform.client;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -13,8 +13,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import com.fasterxml.jackson.databind.JsonNode;
-import io.boomerang.client.model.ValidateTokenRequest;
 import io.cloudevents.v1.CloudEventImpl;
+import net.boomerangplatform.client.model.ValidateTokenRequest;
 import net.boomerangplatform.security.service.ApiTokenService;
 
 @Service

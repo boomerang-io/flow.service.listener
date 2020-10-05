@@ -1,4 +1,4 @@
-package io.boomerang;
+package net.boomerangplatform;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

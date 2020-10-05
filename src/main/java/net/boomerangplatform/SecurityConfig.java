@@ -1,4 +1,3 @@
-package io.boomerang;
 //package net.boomerangplatform;
 //
 //import org.apache.logging.log4j.LogManager;

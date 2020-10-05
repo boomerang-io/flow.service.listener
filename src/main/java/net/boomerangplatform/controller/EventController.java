@@ -1,4 +1,4 @@
-package io.boomerang.controller;
+package net.boomerangplatform.controller;
 
 import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
@@ -14,8 +14,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.boomerang.model.SlackEventPayload;
-import io.boomerang.service.EventProcessor;
+import net.boomerangplatform.model.SlackEventPayload;
+import net.boomerangplatform.service.EventProcessor;
 
 @RestController
 @RequestMapping("/listener")
@@ -71,7 +71,7 @@ public class EventController {
       return ResponseEntity.ok(response);
     } else if (payload != null && "event_callback".equals(payload.path("type").asText())) {
       eventProcessor.routeEvent(getToken(request), request.getRequestURL().toString(), "slack", workflowId, payload);
-      return ResponseEntity.ok(HttpStatus.OK);
+      return ResponseEntity.ok(HttpStatus.NO_CONTENT);
     }
     
     return ResponseEntity.badRequest().build();
