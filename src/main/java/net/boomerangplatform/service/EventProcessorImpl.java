@@ -118,8 +118,6 @@ public class EventProcessorImpl implements EventProcessor {
     return HttpStatus.OK;
   }
   
-  //@RequestHeader("Authorization") String token
-  //@RequestParam("access_token") String token
   //TODO replace with SecurityConfig and SecurityFilter
 //  private Boolean checkAccess(String workflowId, String trigger, String token) {
 //    if (authzEnabled) {
