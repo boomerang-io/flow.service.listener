@@ -4,48 +4,48 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 
-public class SlackEventPayload {
-  
-/*
+/**
  * This model services dual purpose as both the Challenge Payload and the Events Payload.
- * https://api.slack.com/events-api#the-events-api__subscribing-to-event-types__events-api-request-urls
- * https://api.slack.com/events-api#receiving_events
+ * 
+ * @see <a href="https://api.slack.com/events-api#subscriptions">Subscribing to event types</a>
+ * @see <a href="https://api.slack.com/events-api#receiving_events">Receiving Events</a>
  */
+public class SlackEventPayload {
 
-  private String token;
+    private String token;
 
-  private String challenge;
+    private String challenge;
 
-  private String type;
+    private String type;
 
-  public String getToken() {
-    return token;
-  }
+    private Map<String, Object> details = new LinkedHashMap<>();
 
-  public void setToken(String token) {
-    this.token = token;
-  }
+    public String getToken() {
+        return token;
+    }
 
-  public String getChallenge() {
-    return challenge;
-  }
+    public void setToken(String token) {
+        this.token = token;
+    }
 
-  public void setChallenge(String challenge) {
-    this.challenge = challenge;
-  }
+    public String getChallenge() {
+        return challenge;
+    }
 
-  public String getType() {
-    return type;
-  }
+    public void setChallenge(String challenge) {
+        this.challenge = challenge;
+    }
 
-  public void setType(String type) {
-    this.type = type;
-  }
-  
-  Map<String, Object> details = new LinkedHashMap<>();
-  
-  @JsonAnySetter
-  void setDetail(String key, Object value) {
-      details.put(key, value);
-  }
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    @JsonAnySetter
+    public void setDetail(String key, Object value) {
+        details.put(key, value);
+    }
 }
