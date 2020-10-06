@@ -8,12 +8,14 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.cloudevents.v1.CloudEventImpl;
-import net.boomerangplatform.security.service.ApiTokenService;
+import net.boomerangplatform.client.model.ValidateTokenRequest;
+//import net.boomerangplatform.security.service.ApiTokenService;
 
 @Service
 public class WorkflowClientImpl implements WorkflowClient {
@@ -21,28 +23,29 @@ public class WorkflowClientImpl implements WorkflowClient {
 	@Value("${workflow.service.url.execute}")
 	private String executeWorkflowUrl;
 
+    @Value("${workflow.service.url.validateTriggerToken}")
+    private String validateTokenWorkflowUrl;
+
 	private static final Logger LOGGER = LogManager.getLogger(WorkflowClientImpl.class);
 
-	@Autowired
-	private ApiTokenService apiTokenService;
+//	@Autowired
+//	private ApiTokenService apiTokenService;
 	
 	@Autowired
 	@Qualifier("internalRestTemplate")
 	private RestTemplate restTemplate;
 
-//	todo return a wfActivityId
+//	TODO return a wfActivityId
 	@Override
-	public void executeWorkflowPut(String subject, CloudEventImpl<JsonNode> jsonPayload, String workflowId) {
-		String url = executeWorkflowUrl.replace("{workflow.id}", workflowId);
-
+	public void executeWorkflowPut(String subject, CloudEventImpl<JsonNode> jsonPayload) {
 		final HttpHeaders headers = new HttpHeaders();
-		headers.add("Authorization", "Bearer " + apiTokenService.createJWTToken());
+//		headers.add("Authorization", "Bearer " + apiTokenService.createJWTToken());
 		headers.add("Content-Type", "application/cloudevents+json");
 		final HttpEntity<CloudEventImpl<JsonNode>> req = new HttpEntity<>(jsonPayload, headers);
 		
 		LOGGER.info("executeWorkflowPut() - Request: " + req.toString());
 	
-		ResponseEntity<String> responseEntity = restTemplate.exchange(url, HttpMethod.PUT, req, String.class);
+		ResponseEntity<String> responseEntity = restTemplate.exchange(executeWorkflowUrl, HttpMethod.PUT, req, String.class);
 		
 		LOGGER.info("postWebhookEvent() - Status Code: " + responseEntity.getStatusCode());
 		
@@ -53,6 +56,29 @@ public class WorkflowClientImpl implements WorkflowClient {
 //		}
 //		return response;
 	}
+	
+    @Override
+    public Boolean validateTriggerToken(String workflowId, String trigger, String token) {
+      final HttpHeaders headers = new HttpHeaders();
+//      headers.add("Authorization", "Bearer " + apiTokenService.createJWTToken());
+      headers.add("Content-Type", "application/json");
+
+      ValidateTokenRequest payload = new ValidateTokenRequest();
+      payload.setToken(token);
+      final HttpEntity<ValidateTokenRequest> req = new HttpEntity<>(payload, headers);
+
+      ResponseEntity<String> responseEntity =
+          restTemplate.exchange(validateTokenWorkflowUrl.replace("{workflowId}", workflowId)
+              .replace("{trigger}", trigger), HttpMethod.POST, req, String.class);
+
+      LOGGER.info("workflowTriggerTokenCheck() - Status Code: " + responseEntity.getStatusCode());
+
+      if (HttpStatus.OK.equals(responseEntity.getStatusCode())) {
+        return true;
+      }
+
+      return false;
+    }
 
 //
 //	@Override
