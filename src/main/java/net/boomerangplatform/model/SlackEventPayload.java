@@ -5,10 +5,13 @@ import java.util.Map;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 
 /**
- * This model services dual purpose as both the Challenge Payload and the Events Payload.
+ * This model services dual purpose as both the Challenge Payload and the Events
+ * Payload.
  * 
- * @see <a href="https://api.slack.com/events-api#subscriptions">Subscribing to event types</a>
- * @see <a href="https://api.slack.com/events-api#receiving_events">Receiving Events</a>
+ * @see <a href="https://api.slack.com/events-api#subscriptions">Subscribing to
+ *      event types</a>
+ * @see <a href="https://api.slack.com/events-api#receiving_events">Receiving
+ *      Events</a>
  */
 public class SlackEventPayload {
 
