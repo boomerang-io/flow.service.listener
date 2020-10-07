@@ -51,19 +51,23 @@ public class WorkflowClientImpl implements WorkflowClient {
 
   @Override
   public Boolean validateWorkflowToken(String workflowId, String token) {
-    final HttpHeaders headers = new HttpHeaders();
-    headers.add("Content-Type", "application/json");
+    if (token != null) {
+      final HttpHeaders headers = new HttpHeaders();
+      headers.add("Content-Type", "application/json");
 
-    ValidateTokenRequest payload = new ValidateTokenRequest();
-    payload.setToken(token);
+      ValidateTokenRequest payload = new ValidateTokenRequest();
+      payload.setToken(token);
 
-    final HttpEntity<ValidateTokenRequest> req = new HttpEntity<>(payload, headers);
-    ResponseEntity<String> responseEntity = restTemplate
-        .exchange(validateTokenWorkflowUrl.replace("{workflowId}", workflowId), HttpMethod.POST, req, String.class);
+      final HttpEntity<ValidateTokenRequest> req = new HttpEntity<>(payload, headers);
+      ResponseEntity<String> responseEntity =
+          restTemplate.exchange(validateTokenWorkflowUrl.replace("{workflowId}", workflowId),
+              HttpMethod.POST, req, String.class);
 
-    LOGGER.info("workflowTriggerTokenCheck() - Status Code: " + responseEntity.getStatusCode());
+      LOGGER.info("validateWorkflowToken() - Status Code: " + responseEntity.getStatusCode());
 
-    return HttpStatus.OK.equals(responseEntity.getStatusCode());
+      return HttpStatus.OK.equals(responseEntity.getStatusCode());
+    }
+    return HttpStatus.OK.equals(HttpStatus.BAD_REQUEST);
   }
 
 // @formatter:off
