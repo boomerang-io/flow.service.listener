@@ -51,7 +51,7 @@ public class WorkflowClientImpl implements WorkflowClient {
 
   @Override
   public Boolean validateWorkflowToken(String workflowId, String token) {
-    if (token != null) {
+    if (token != null && !token.isBlank()) {
       final HttpHeaders headers = new HttpHeaders();
       headers.add("Content-Type", "application/json");
 
