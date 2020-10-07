@@ -22,7 +22,9 @@ public class NatsClientImpl implements NatsClient {
   @Value("${eventing.nats.cluster}")
   private String natsCluster;
   
-  static private int clientIdUniqueInt = (int) (Math.random() * 10000 + 1); // NOSONAR 
+  static private int CLIENT_ID_UNIQUE_INT = (int) (Math.random() * 10000 + 1); // NOSONAR 
+  
+  static private String CLIENT_ID_PREFIX = "listener";
 
   /**
    * Publishes CloudEvent payload to NATS.
@@ -31,12 +33,14 @@ public class NatsClientImpl implements NatsClient {
    */
   @Override
   public void publish(String eventId, String subject, String jsonPayload) {
-    StreamingConnectionFactory connectionFactory = getStreamingConnectionFactory("listener");
+    try {
+      StreamingConnectionFactory connectionFactory = getStreamingConnectionFactory();
 
-    // `StreamingConnection` extends `AutoCloseable`, the connection closes
-    // automatically after try statement
-    try (StreamingConnection streamingConnection = connectionFactory.createConnection()) {
-      streamingConnection.publish(subject, jsonPayload.getBytes(StandardCharsets.UTF_8));
+      // `StreamingConnection` extends `AutoCloseable`, the connection closes
+      // automatically after try statement
+      try (StreamingConnection streamingConnection = connectionFactory.createConnection()) {
+        streamingConnection.publish(subject, jsonPayload.getBytes(StandardCharsets.UTF_8));
+      }
 
     } catch (IOException exception) {
       logger.error(exception.toString());
@@ -90,10 +94,10 @@ public class NatsClientImpl implements NatsClient {
   /**
    * @category Helper method.
    */
-  private StreamingConnectionFactory getStreamingConnectionFactory(String clientId) {
-    logger.info("Initializng subscriptions to NATS");
+  private StreamingConnectionFactory getStreamingConnectionFactory() {
+    logger.info("Initializng subscriptions to NATS with Client ID: " + CLIENT_ID_PREFIX + "-" + CLIENT_ID_UNIQUE_INT);
 
-    Options options = new Options.Builder().natsUrl(natsUrl).clusterId(natsCluster).clientId(clientId + "-" + clientIdUniqueInt)
+    Options options = new Options.Builder().natsUrl(natsUrl).clusterId(natsCluster).clientId(CLIENT_ID_PREFIX + "-" + CLIENT_ID_UNIQUE_INT)
         .build();
     return new StreamingConnectionFactory(options);
   }
