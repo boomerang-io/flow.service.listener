@@ -48,7 +48,7 @@ public class EventProcessorImpl implements EventProcessor {
     final URI uri = URI.create(requestUri);
     final String subject = "/" + workflowId;
     
-    if (!checkAccess(workflowId, trigger, token)) {
+    if (!checkAccess(workflowId, token)) {
       return HttpStatus.FORBIDDEN;
     }
         
@@ -93,7 +93,7 @@ public class EventProcessorImpl implements EventProcessor {
       return HttpStatus.BAD_REQUEST;
     }
     
-    if (!checkAccess(getWorkflowIdFromSubject(subject), "custom", token)) {
+    if (!checkAccess(getWorkflowIdFromSubject(subject), token)) {
       return HttpStatus.FORBIDDEN;
     }
     
@@ -118,11 +118,11 @@ public class EventProcessorImpl implements EventProcessor {
     return HttpStatus.OK;
   }
   
-  private Boolean checkAccess(String workflowId, String trigger, String token) {
+  private Boolean checkAccess(String workflowId, String token) {
     if (authzEnabled) {
       logger.info("checkAccess() - Token: " + token);
       if (token != null) {
-        return workflowClient.validateTriggerToken(workflowId, trigger, token);
+        return workflowClient.validateWorkflowToken(workflowId, token);
       } else {
         logger.error("checkAccess() - Error: no token provided.");
         return false;
