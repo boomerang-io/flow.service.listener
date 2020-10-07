@@ -37,10 +37,11 @@ public class RestConfig {
   public RestTemplate externalRestTemplate() {
     if (this.boomerangProxyHost.isPresent() && !this.boomerangProxyHost.get().isBlank()
         && this.boomerangProxyPort.isPresent() && !this.boomerangProxyPort.get().isBlank()) {
-      HttpComponentsClientHttpRequestFactory clientHttpRequestFactory =
-          new HttpComponentsClientHttpRequestFactory(
-              HttpClientBuilder.create().setProxy(new HttpHost(this.boomerangProxyHost.get(),
-                  Integer.valueOf(this.boomerangProxyPort.get()), "http")).build());
+      HttpComponentsClientHttpRequestFactory clientHttpRequestFactory = new HttpComponentsClientHttpRequestFactory(
+          HttpClientBuilder.create()
+              .setProxy(
+                  new HttpHost(this.boomerangProxyHost.get(), Integer.valueOf(this.boomerangProxyPort.get()), "http"))
+              .build());
       return new RestTemplate(clientHttpRequestFactory);
     }
     return internalRestTemplate();
@@ -57,8 +58,7 @@ public class RestConfig {
 
     final SSLConnectionSocketFactory csf = new SSLConnectionSocketFactory(sslContext);
     final CloseableHttpClient httpClient = HttpClients.custom().setSSLSocketFactory(csf).build();
-    final HttpComponentsClientHttpRequestFactory requestFactory =
-        new HttpComponentsClientHttpRequestFactory();
+    final HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory();
     requestFactory.setHttpClient(httpClient);
     final RestTemplate restTemplate = new RestTemplate(requestFactory);
     setRestTemplateInterceptors(restTemplate);
@@ -68,18 +68,16 @@ public class RestConfig {
   @Bean
   @Qualifier("internalRestTemplate")
   public RestTemplate internalRestTemplate() {
-    final HttpComponentsClientHttpRequestFactory requestFactory =
-        new HttpComponentsClientHttpRequestFactory();
+    final HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory();
     final RestTemplate template = new RestTemplate(requestFactory);
     setRestTemplateInterceptors(template);
     return template;
   }
-  
+
   @Bean
   @Qualifier("selfRestTemplate")
   public RestTemplate selfRestTemplate() {
-    final HttpComponentsClientHttpRequestFactory requestFactory =
-        new HttpComponentsClientHttpRequestFactory();
+    final HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory();
     final RestTemplate template = new RestTemplate(requestFactory);
     setRestTemplateInterceptors(template);
     return template;

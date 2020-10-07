@@ -4,19 +4,24 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 
-public class SlackEventPayload {
-  
-/*
- * This model services dual purpose as both the Challenge Payload and the Events Payload.
- * https://api.slack.com/events-api#the-events-api__subscribing-to-event-types__events-api-request-urls
- * https://api.slack.com/events-api#receiving_events
+/**
+ * This model services dual purpose as both the Challenge Payload and the Events
+ * Payload.
+ * 
+ * @see <a href="https://api.slack.com/events-api#subscriptions">Subscribing to
+ *      event types</a>
+ * @see <a href="https://api.slack.com/events-api#receiving_events">Receiving
+ *      Events</a>
  */
+public class SlackEventPayload {
 
   private String token;
 
   private String challenge;
 
   private String type;
+
+  private Map<String, Object> details = new LinkedHashMap<>();
 
   public String getToken() {
     return token;
@@ -41,11 +46,9 @@ public class SlackEventPayload {
   public void setType(String type) {
     this.type = type;
   }
-  
-  Map<String, Object> details = new LinkedHashMap<>();
-  
+
   @JsonAnySetter
-  void setDetail(String key, Object value) {
-      details.put(key, value);
+  public void setDetail(String key, Object value) {
+    details.put(key, value);
   }
 }
