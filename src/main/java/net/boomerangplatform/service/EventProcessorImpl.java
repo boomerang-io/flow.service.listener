@@ -42,15 +42,15 @@ public class EventProcessorImpl implements EventProcessor {
   private WorkflowClient workflowClient;
 
   @Override
-  public HttpStatus routeEvent(String token, String requestUri, String trigger, String workflowId, JsonNode payload) {
+  public HttpStatus routeWebhookEvent(String token, String requestUri, String trigger, String workflowId, JsonNode payload) {
     final String eventId = UUID.randomUUID().toString();
     final String eventType = TYPE_PREFIX + trigger;
     final URI uri = URI.create(requestUri);
     final String subject = "/" + workflowId;
     
-//    if (!checkAccess(workflowId, trigger, token)) {
-//      return HttpStatus.FORBIDDEN;
-//    }
+    if (!checkAccess(workflowId, trigger, token)) {
+      return HttpStatus.FORBIDDEN;
+    }
         
     final CloudEventImpl<JsonNode> cloudEvent =
     CloudEventBuilder.<JsonNode>builder()
@@ -93,9 +93,9 @@ public class EventProcessorImpl implements EventProcessor {
       return HttpStatus.BAD_REQUEST;
     }
     
-//    if (!checkAccess(getWorkflowIdFromSubject(subject), "custom", token)) {
-//      return HttpStatus.FORBIDDEN;
-//    }
+    if (!checkAccess(getWorkflowIdFromSubject(subject), "custom", token)) {
+      return HttpStatus.FORBIDDEN;
+    }
     
     final CloudEventImpl<JsonNode> cloudEvent =
     CloudEventBuilder.<JsonNode>builder()
@@ -118,20 +118,19 @@ public class EventProcessorImpl implements EventProcessor {
     return HttpStatus.OK;
   }
   
-  //TODO replace with SecurityConfig and SecurityFilter
-//  private Boolean checkAccess(String workflowId, String trigger, String token) {
-//    if (authzEnabled) {
-//      logger.info("checkAccess() - Token: " + token);
-//      if (token != null) {
-//        return workflowClient.validateTriggerToken(workflowId, trigger, token);
-//      } else {
-//        logger.error("checkAccess() - Error: no token provided.");
-//        return false;
-//      }
-//    } else {
-//      return true;
-//    }
-//  }
+  private Boolean checkAccess(String workflowId, String trigger, String token) {
+    if (authzEnabled) {
+      logger.info("checkAccess() - Token: " + token);
+      if (token != null) {
+        return workflowClient.validateTriggerToken(workflowId, trigger, token);
+      } else {
+        logger.error("checkAccess() - Error: no token provided.");
+        return false;
+      }
+    } else {
+      return true;
+    }
+  }
 
   private String getWorkflowIdFromSubject(String subject) {
     // Reference 0 will be an empty string as it is the left hand side of the split
