@@ -3,12 +3,10 @@ package net.boomerangplatform.client;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeoutException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-
 import io.nats.streaming.Options;
 import io.nats.streaming.StreamingConnection;
 import io.nats.streaming.StreamingConnectionFactory;
@@ -16,13 +14,15 @@ import io.nats.streaming.StreamingConnectionFactory;
 @Service
 public class NatsClientImpl implements NatsClient {
 
-  private static final Logger logger = Logger.getLogger(NatsClientImpl.class.getName());
+  private static final Logger logger = LogManager.getLogger(NatsClientImpl.class);
 
   @Value("${eventing.nats.url}")
   private String natsUrl;
 
   @Value("${eventing.nats.cluster}")
   private String natsCluster;
+  
+  static private int clientIdUniqueInt = (int) (Math.random() * 10000 + 1); // NOSONAR 
 
   /**
    * Publishes CloudEvent payload to NATS.
@@ -39,10 +39,10 @@ public class NatsClientImpl implements NatsClient {
       streamingConnection.publish(subject, jsonPayload.getBytes(StandardCharsets.UTF_8));
 
     } catch (IOException exception) {
-      logger.log(Level.SEVERE, "Error: ", exception);
+      logger.error(exception.toString());
     } catch (InterruptedException | TimeoutException exception) {
       Thread.currentThread().interrupt();
-      logger.log(Level.SEVERE, "Error: ", exception);
+      logger.error(exception.toString());
     }
   }
 
@@ -90,9 +90,7 @@ public class NatsClientImpl implements NatsClient {
   private StreamingConnectionFactory getStreamingConnectionFactory(String clientId) {
     logger.info("Initializng subscriptions to NATS");
 
-    int random = (int) (Math.random() * 10000 + 1); // NOSONAR
-
-    Options options = new Options.Builder().natsUrl(natsUrl).clusterId(natsCluster).clientId(clientId + "-" + random)
+    Options options = new Options.Builder().natsUrl(natsUrl).clusterId(natsCluster).clientId(clientId + "-" + clientIdUniqueInt)
         .build();
     return new StreamingConnectionFactory(options);
   }
