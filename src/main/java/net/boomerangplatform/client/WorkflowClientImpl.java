@@ -23,7 +23,7 @@ public class WorkflowClientImpl implements WorkflowClient {
 	@Value("${workflow.service.url.execute}")
 	private String executeWorkflowUrl;
 
-    @Value("${workflow.service.url.validateTriggerToken}")
+    @Value("${workflow.service.url.validateToken}")
     private String validateTokenWorkflowUrl;
 
 	private static final Logger LOGGER = LogManager.getLogger(WorkflowClientImpl.class);
@@ -68,8 +68,7 @@ public class WorkflowClientImpl implements WorkflowClient {
       final HttpEntity<ValidateTokenRequest> req = new HttpEntity<>(payload, headers);
 
       ResponseEntity<String> responseEntity =
-          restTemplate.exchange(validateTokenWorkflowUrl.replace("{workflowId}", workflowId)
-              .replace("{trigger}", trigger), HttpMethod.POST, req, String.class);
+          restTemplate.exchange(validateTokenWorkflowUrl.replace("{workflowId}", workflowId), HttpMethod.POST, req, String.class);
 
       LOGGER.info("workflowTriggerTokenCheck() - Status Code: " + responseEntity.getStatusCode());
 
