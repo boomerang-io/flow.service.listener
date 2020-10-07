@@ -43,11 +43,14 @@ public class EventProcessorImpl implements EventProcessor {
 
   @Override
   public HttpStatus routeWebhookEvent(String token, String requestUri, String trigger, String workflowId,
-      JsonNode payload) {
+      JsonNode payload, String workflowActivityId, String topic ) {
     final String eventId = UUID.randomUUID().toString();
     final String eventType = TYPE_PREFIX + trigger;
     final URI uri = URI.create(requestUri);
-    final String subject = "/" + workflowId;
+    String subject = "/" + workflowId;
+    if ("wfe".equals(trigger) && workflowActivityId != null) {
+      subject = subject + "/" + workflowActivityId + "/" + topic;
+    }
 
     if (!checkAccess(workflowId, token)) {
       return HttpStatus.FORBIDDEN;

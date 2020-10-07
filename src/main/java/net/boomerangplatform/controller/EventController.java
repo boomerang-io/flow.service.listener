@@ -62,18 +62,18 @@ public class EventController {
           response.setChallenge(jsonPayload.getChallenge());
           return ResponseEntity.ok(response);
         } else if (payload != null && "event_callback".equals(payload.path("type").asText())) {
-          eventProcessor.routeWebhookEvent(token, request.getRequestURL().toString(), "slack", workflowId, payload);
+          eventProcessor.routeWebhookEvent(token, request.getRequestURL().toString(), "slack", workflowId, payload, null, null);
           return ResponseEntity.ok(HttpStatus.NO_CONTENT);
         } else {
           return ResponseEntity.badRequest().build();
         }
       case dockerhub:
         // TODO: dockerhub callback_url validation
-        eventProcessor.routeWebhookEvent(token, request.getRequestURL().toString(), "dockerhub", workflowId, payload);
+        eventProcessor.routeWebhookEvent(token, request.getRequestURL().toString(), "dockerhub", workflowId, payload, null, null);
         return ResponseEntity.ok(HttpStatus.OK);
 
       case generic:
-        eventProcessor.routeWebhookEvent(token, request.getRequestURL().toString(), "webhook", workflowId, payload);
+        eventProcessor.routeWebhookEvent(token, request.getRequestURL().toString(), "webhook", workflowId, payload, null, null);
         return ResponseEntity.ok(HttpStatus.OK);
 
       default:
@@ -91,9 +91,9 @@ public class EventController {
   public ResponseEntity<?> acceptWebhookEvent(HttpServletRequest request, @RequestParam String workflowId,
       @RequestParam String workflowActivityId, @RequestParam String topic, @RequestBody JsonNode payload,
       @TokenAttribute String token) {
-    eventProcessor.routeWebhookEvent(token, request.getRequestURL().toString(), "wfe", workflowId, payload);
+    eventProcessor.routeWebhookEvent(token, request.getRequestURL().toString(), "wfe", workflowId, payload, workflowActivityId, topic);
     return ResponseEntity.ok(HttpStatus.OK);
-  }
+  } 
 
   /**
    * Accepts any JSON Cloud Event. This will map to the custom trigger but the

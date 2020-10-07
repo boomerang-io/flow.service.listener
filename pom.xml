@@ -114,23 +114,11 @@
 			<version>4.5.6</version>
 		</dependency>
 		<dependency>
-			<groupId>net.boomerangplatform</groupId>
-			<artifactId>lib-opentracing</artifactId>
-			<version>1.0.5</version>
-		</dependency>
-		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
-
-	<repositories>
-		<repository>
-			<id>boomeranglib-maven</id>
-			<url>https://tools.boomerangplatform.net/artifactory/boomeranglib-maven</url>
-		</repository>
-	</repositories>
 
 	<build>
 		<testSourceDirectory>${project.basedir}/src/test/java</testSourceDirectory>

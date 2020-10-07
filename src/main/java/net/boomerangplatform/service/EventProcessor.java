@@ -6,7 +6,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 public interface EventProcessor {
 
-  HttpStatus routeWebhookEvent(String token, String requestUri, String target, String workflowId, JsonNode payload);
-
   HttpStatus routeCloudEvent(String token, String requestUrl, Map<String, Object> headers, JsonNode payload);
+
+  HttpStatus routeWebhookEvent(String token, String string, String trigger, String workflowId,
+      JsonNode payload, String workflowActivityId, String topic);
 }
