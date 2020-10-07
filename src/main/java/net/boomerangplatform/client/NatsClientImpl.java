@@ -43,7 +43,10 @@ public class NatsClientImpl implements NatsClient {
     } catch (InterruptedException | TimeoutException exception) {
       Thread.currentThread().interrupt();
       logger.error(exception.toString());
+    } catch (Exception exception) {
+      logger.error(exception.toString());
     }
+    
   }
 
   /**
