@@ -11,8 +11,8 @@ import net.boomerangplatform.attributes.TokenAttributeArgumentResolver;
 @Configuration
 public class AttributeConfig implements WebMvcConfigurer {
 
-    @Override
-    public void addArgumentResolvers(List<HandlerMethodArgumentResolver> argumentResolvers) {
-        argumentResolvers.add(new TokenAttributeArgumentResolver());
-    }
+  @Override
+  public void addArgumentResolvers(List<HandlerMethodArgumentResolver> argumentResolvers) {
+    argumentResolvers.add(new TokenAttributeArgumentResolver());
+  }
 }

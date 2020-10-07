@@ -15,40 +15,40 @@ import com.fasterxml.jackson.annotation.JsonAnySetter;
  */
 public class SlackEventPayload {
 
-    private String token;
+  private String token;
 
-    private String challenge;
+  private String challenge;
 
-    private String type;
+  private String type;
 
-    private Map<String, Object> details = new LinkedHashMap<>();
+  private Map<String, Object> details = new LinkedHashMap<>();
 
-    public String getToken() {
-        return token;
-    }
+  public String getToken() {
+    return token;
+  }
 
-    public void setToken(String token) {
-        this.token = token;
-    }
+  public void setToken(String token) {
+    this.token = token;
+  }
 
-    public String getChallenge() {
-        return challenge;
-    }
+  public String getChallenge() {
+    return challenge;
+  }
 
-    public void setChallenge(String challenge) {
-        this.challenge = challenge;
-    }
+  public void setChallenge(String challenge) {
+    this.challenge = challenge;
+  }
 
-    public String getType() {
-        return type;
-    }
+  public String getType() {
+    return type;
+  }
 
-    public void setType(String type) {
-        this.type = type;
-    }
+  public void setType(String type) {
+    this.type = type;
+  }
 
-    @JsonAnySetter
-    public void setDetail(String key, Object value) {
-        details.put(key, value);
-    }
+  @JsonAnySetter
+  public void setDetail(String key, Object value) {
+    details.put(key, value);
+  }
 }
