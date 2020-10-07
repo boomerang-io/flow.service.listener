@@ -36,7 +36,7 @@ public class EventController {
    * Note: Only partially conformant to the specification.
    * CE Specification: https://github.com/cloudevents/spec/blob/master/http-webhook.md 
    * Dockerhub Specification: https://docs.docker.com/docker-hub/webhooks/ 
-   * Slack Specification:
+   * Slack Specification: https://api.slack.com/events-api#receiving_events
    * 
    * Sample: /webhook?workflowId={workflowId}&type={generic|slack|dockerhub}&access_token={access_token}
    */
