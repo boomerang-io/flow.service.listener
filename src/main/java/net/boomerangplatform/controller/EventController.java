@@ -5,7 +5,6 @@ import javax.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -15,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import net.boomerangplatform.attributes.TokenAttribute;
 import net.boomerangplatform.model.SlackEventPayload;
 import net.boomerangplatform.model.WebhookType;
 import net.boomerangplatform.service.EventProcessor;
@@ -43,7 +43,7 @@ public class EventController {
   @PostMapping(value = "/webhook", consumes = "application/json; charset=utf-8")
   public ResponseEntity<?> acceptWebhookEvent(HttpServletRequest request,
       @RequestParam String workflowId, @RequestParam WebhookType type,
-      @RequestBody JsonNode payload) {
+      @RequestBody JsonNode payload, @TokenAttribute String token) {
     if (WebhookType.slack.equals(type)) {
       SlackEventPayload response = new SlackEventPayload();
       ObjectMapper mapper = new ObjectMapper();
@@ -53,17 +53,17 @@ public class EventController {
         response.setChallenge(jsonPayload.getChallenge());
         return ResponseEntity.ok(response);
       } else if (payload != null && "event_callback".equals(payload.path("type").asText())) {
-        eventProcessor.routeWebhookEvent(getToken(request), request.getRequestURL().toString(),
+        eventProcessor.routeWebhookEvent(token, request.getRequestURL().toString(),
             "slack", workflowId, payload);
         return ResponseEntity.ok(HttpStatus.NO_CONTENT);
       }
     } else if (WebhookType.dockerhub.equals(type)) {
       // TODO: dockerhub callback_url validation
-      eventProcessor.routeWebhookEvent(getToken(request), request.getRequestURL().toString(),
+      eventProcessor.routeWebhookEvent(token, request.getRequestURL().toString(),
           "dockerhub", workflowId, payload);
       return ResponseEntity.ok(HttpStatus.OK);
     } else {
-      eventProcessor.routeWebhookEvent(getToken(request), request.getRequestURL().toString(),
+      eventProcessor.routeWebhookEvent(token, request.getRequestURL().toString(),
           "webhook", workflowId, payload);
       return ResponseEntity.ok(HttpStatus.OK);
     }
@@ -79,8 +79,8 @@ public class EventController {
   @PostMapping(value = "/webhook/wfe", consumes = "application/json; charset=utf-8")
   public ResponseEntity<?> acceptWebhookEvent(HttpServletRequest request,
       @RequestParam String workflowId, @RequestParam String workflowActivityId,
-      @RequestParam String topic, @RequestBody JsonNode payload) {
-    eventProcessor.routeWebhookEvent(getToken(request), request.getRequestURL().toString(), "wfe",
+      @RequestParam String topic, @RequestBody JsonNode payload, @TokenAttribute String token) {
+    eventProcessor.routeWebhookEvent(token, request.getRequestURL().toString(), "wfe",
         workflowId, payload);
     return ResponseEntity.ok(HttpStatus.OK);
   }
@@ -92,20 +92,9 @@ public class EventController {
    */
   @PutMapping(value = "/event", consumes = "application/cloudevents+json; charset=utf-8")
   public ResponseEntity<HttpStatus> acceptEvent(HttpServletRequest request,
-      @RequestHeader Map<String, Object> headers, @RequestBody JsonNode payload) {
-    eventProcessor.routeCloudEvent(getToken(request), request.getRequestURL().toString(), headers,
+      @RequestHeader Map<String, Object> headers, @RequestBody JsonNode payload, @TokenAttribute String token) {
+    eventProcessor.routeCloudEvent(token, request.getRequestURL().toString(), headers,
         payload);
     return ResponseEntity.ok(HttpStatus.OK);
-  }
-
-  private String getToken(HttpServletRequest request) {
-    if (request.getHeader(TOKEN_HEADER) != null && !request.getHeader(TOKEN_HEADER).isEmpty()) {
-      return request.getHeader(TOKEN_HEADER).replace("Bearer ", "");
-    } else if (request.getParameter(TOKEN_PARAM) != null
-        && !request.getParameter(TOKEN_PARAM).isEmpty()) {
-      return request.getParameter(TOKEN_PARAM);
-    } else {
-      return "";
-    }
   }
 }
