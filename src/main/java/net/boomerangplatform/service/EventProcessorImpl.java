@@ -2,21 +2,22 @@ package net.boomerangplatform.service;
 
 import java.net.URI;
 import java.time.ZonedDateTime;
-import java.util.Map;
 import java.util.UUID;
+
+import com.fasterxml.jackson.databind.JsonNode;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import com.fasterxml.jackson.databind.JsonNode;
+
 import io.cloudevents.CloudEvent;
 import io.cloudevents.json.Json;
 import io.cloudevents.v1.AttributesImpl;
 import io.cloudevents.v1.CloudEventBuilder;
 import io.cloudevents.v1.CloudEventImpl;
-import io.cloudevents.v1.http.Unmarshallers;
 import net.boomerangplatform.client.NatsClient;
 import net.boomerangplatform.client.WorkflowClient;
 
@@ -41,7 +42,7 @@ public class EventProcessorImpl implements EventProcessor {
 
   @Override
   public HttpStatus routeWebhookEvent(String token, String requestUri, String trigger, String workflowId,
-      JsonNode payload, String workflowActivityId, String topic ) {
+      JsonNode payload, String workflowActivityId, String topic) {
     final String eventId = UUID.randomUUID().toString();
     final String eventType = TYPE_PREFIX + trigger;
     final URI uri = URI.create(requestUri);
@@ -70,23 +71,16 @@ public class EventProcessorImpl implements EventProcessor {
   }
 
   @Override
-  public HttpStatus routeCloudEvent(String token, String requestUri, Map<String, Object> headers, JsonNode payload) {
+  public HttpStatus routeCloudEvent(CloudEvent<AttributesImpl, JsonNode> cloudEvent, String token, URI uri) {
 
-    logger.info("routeCloudEvent() - Event as Message String: " + payload.toString());
+    logger.info("routeCloudEvent() - Received CloudEvent Attributes: " + cloudEvent.getAttributes());
+    logger.info("routeCloudEvent() - Received CloudEvent Data: " + cloudEvent.getData().get());
 
-    CloudEvent<AttributesImpl, JsonNode> event = Unmarshallers.structured(JsonNode.class).withHeaders(() -> headers)
-        .withPayload(() -> payload.toString()).unmarshal();
+    String eventId = UUID.randomUUID().toString();
+    String eventType = TYPE_PREFIX + "custom";
+    String subject = cloudEvent.getAttributes().getSubject().orElse("");
 
-    logger.info("routeCloudEvent() - Attributes: " + event.getAttributes().toString());
-    JsonNode eventData = event.getData().get();
-    logger.info("routeCloudEvent() - Data: " + eventData.toPrettyString());
-
-    final String eventId = UUID.randomUUID().toString();
-    final String eventType = TYPE_PREFIX + "custom";
-    final URI uri = URI.create(requestUri);
-    String subject = event.getAttributes().getSubject().orElse("");
-
-    if (!subject.startsWith("/")) {
+    if (!subject.startsWith("/") || cloudEvent.getData().isEmpty()) {
       return HttpStatus.BAD_REQUEST;
     }
 
@@ -94,16 +88,16 @@ public class EventProcessorImpl implements EventProcessor {
       return HttpStatus.FORBIDDEN;
     }
 
-    final CloudEventImpl<JsonNode> cloudEvent = CloudEventBuilder.<JsonNode>builder().withType(eventType)
-        .withId(eventId).withSource(uri).withData(payload).withSubject(subject).withTime(ZonedDateTime.now()).build();
+    final CloudEventImpl<JsonNode> forwardedCloudEvent = CloudEventBuilder.<JsonNode>builder().withType(eventType)
+        .withId(eventId).withSource(uri).withData(cloudEvent.getData().get()).withSubject(subject)
+        .withTime(ZonedDateTime.now()).build();
 
-    final String jsonPayload = Json.encode(cloudEvent);
-    logger.info("CloudEvent Object - " + jsonPayload);
+    logger.info("routeCloudEvent() - Forwarded CloudEvent Data: " + forwardedCloudEvent.getData().get());
 
     if (eventingEnabled) {
-      natsClient.publish(eventId, jsonPayload);
+      natsClient.publish(eventId, forwardedCloudEvent.getData().get().toString());
     } else {
-      workflowClient.executeWorkflowPut(cloudEvent);
+      workflowClient.executeWorkflowPut(forwardedCloudEvent);
     }
 
     return HttpStatus.OK;

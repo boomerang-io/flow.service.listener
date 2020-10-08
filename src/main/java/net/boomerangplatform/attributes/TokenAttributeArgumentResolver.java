@@ -32,9 +32,9 @@ public class TokenAttributeArgumentResolver implements HandlerMethodArgumentReso
       return null;
 
     // Get the request and extract the token
-    HttpServletRequest request = (HttpServletRequest) webRequest.getNativeRequest();
-    String tokenHeaderValue = request.getHeader(TOKEN_HEADER_NAME);
-    String tokenUrlParamValue = request.getParameter(TOKEN_URL_PARAM_NAME);
+    HttpServletRequest httpRequest = (HttpServletRequest) webRequest.getNativeRequest();
+    String tokenHeaderValue = httpRequest.getHeader(TOKEN_HEADER_NAME);
+    String tokenUrlParamValue = httpRequest.getParameter(TOKEN_URL_PARAM_NAME);
 
     // Extract token from header if possible
     if (tokenHeaderValue != null && !tokenHeaderValue.isEmpty()) {
