@@ -22,9 +22,9 @@ public class NatsClientImpl implements NatsClient {
   @Value("${eventing.nats.cluster}")
   private String natsCluster;
   
-//  static private int CLIENT_ID_UNIQUE_INT = (int) (Math.random() * 10000 + 1); // NOSONAR 
+  static private int CLIENT_ID_UNIQUE_INT = (int) (Math.random() * 10000 + 1); // NOSONAR 
   
-//  static private String CLIENT_ID_PREFIX = "listener";
+  static private String CLIENT_ID_PREFIX = "listener";
 
   /**
    * Publishes CloudEvent payload to NATS.
@@ -34,7 +34,7 @@ public class NatsClientImpl implements NatsClient {
   @Override
   public void publish(String eventId, String subject, String jsonPayload) {
     try {
-      StreamingConnectionFactory connectionFactory = getStreamingConnectionFactory("listener");
+      StreamingConnectionFactory connectionFactory = getStreamingConnectionFactory();
 
       // `StreamingConnection` extends `AutoCloseable`, the connection closes
       // automatically after try statement
@@ -94,11 +94,10 @@ public class NatsClientImpl implements NatsClient {
   /**
    * @category Helper method.
    */
-  private StreamingConnectionFactory getStreamingConnectionFactory(String prefix) {
-    int random = (int) (Math.random() * 10000 + 1); // NOSONAR
-    logger.info("Initializng subscriptions to NATS with Client ID: " + prefix + "-" + random);
+  private StreamingConnectionFactory getStreamingConnectionFactory() {
+    logger.info("Initializng subscriptions to NATS with Client ID: " + CLIENT_ID_PREFIX + "-" + CLIENT_ID_UNIQUE_INT);
 
-    Options options = new Options.Builder().natsUrl(natsUrl).clusterId(natsCluster).clientId(prefix + "-" + random)
+    Options options = new Options.Builder().natsUrl(natsUrl).clusterId(natsCluster).clientId(CLIENT_ID_PREFIX + "-" + CLIENT_ID_UNIQUE_INT)
         .build();
     return new StreamingConnectionFactory(options);
   }
