@@ -3,12 +3,12 @@ package net.boomerangplatform.client;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeoutException;
-import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import io.nats.client.ConnectionListener;
+import io.nats.streaming.AckHandler;
 import io.nats.streaming.Options;
 import io.nats.streaming.StreamingConnection;
 import io.nats.streaming.StreamingConnectionFactory;
@@ -25,25 +25,34 @@ public class NatsClientImpl implements NatsClient {
   private String natsCluster;
 
   @Override
-  /* 
+  /*
    * Publishes CloudEvent payload to NATS
    * https://github.com/cloudevents/spec/blob/master/nats-protocol-binding.md
    */
   public void publish(String eventId, String subject, String jsonPayload) {
     try {
-      StreamingConnectionFactory cf = getStreamingConnectionFactory("listener");
+      StreamingConnectionFactory cf = getStreamingConnectionFactory("flow-listener");
 
       StreamingConnection sc = cf.createConnection();
-      sc.publish(subject, jsonPayload.getBytes(StandardCharsets.UTF_8));
+      AckHandler ackHandler = new AckHandler() {
+        public void onAck(String guid, Exception err) {
+          if (err != null) {
+            System.err.printf("Error publishing msg id %s: %s\n", guid, err.getMessage());
+          } else {
+            System.out.printf("Received ack for msg id %s\n", guid);
+          }
+        }
+      };
+      String guid = sc.publish(subject, jsonPayload.getBytes(StandardCharsets.UTF_8), ackHandler);
 
     } catch (IOException e) {
       logger.error(e.toString());
     } catch (InterruptedException | TimeoutException ex) {
       Thread.currentThread().interrupt();
       logger.error(ex.toString());
-    } 
-    
-//    Do we need a finally with sc.close()
+    }
+
+    // Do we need a finally with sc.close()
 
   }
 
