@@ -110,9 +110,8 @@ public class EventController {
   @PutMapping(value = "/event", consumes = "application/cloudevents+json; charset=utf-8")
   public ResponseEntity<HttpStatus> acceptEvent(@CloudEventAttribute CloudEvent<AttributesImpl, JsonNode> cloudEvent,
       @TokenAttribute String token) {
-
-    HttpStatus resultHttpStatus = eventProcessor.routeCloudEvent(cloudEvent, token,
+    eventProcessor.routeCloudEvent(cloudEvent, token,
         ServletUriComponentsBuilder.fromCurrentRequestUri().build().toUri());
-    return ResponseEntity.ok(resultHttpStatus);
+    return ResponseEntity.ok(HttpStatus.OK);
   }
 }
