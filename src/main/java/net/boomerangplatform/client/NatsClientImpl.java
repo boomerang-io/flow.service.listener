@@ -3,10 +3,12 @@ package net.boomerangplatform.client;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeoutException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import io.nats.client.ConnectionListener;
 import io.nats.streaming.Options;
 import io.nats.streaming.StreamingConnection;
 import io.nats.streaming.StreamingConnectionFactory;
@@ -14,7 +16,7 @@ import io.nats.streaming.StreamingConnectionFactory;
 @Service
 public class NatsClientImpl implements NatsClient {
 
-  private static final Logger logger = Logger.getLogger(NatsClientImpl.class.getName());
+  private static final Logger logger = LogManager.getLogger(NatsClientImpl.class);
 
   @Value("${eventing.nats.url}")
   private String natsUrl;
@@ -35,10 +37,10 @@ public class NatsClientImpl implements NatsClient {
       sc.publish(subject, jsonPayload.getBytes(StandardCharsets.UTF_8));
 
     } catch (IOException e) {
-      logger.log(Level.SEVERE, "Error: ", e);
+      logger.error(e.toString());
     } catch (InterruptedException | TimeoutException ex) {
       Thread.currentThread().interrupt();
-      logger.log(Level.SEVERE, "Error: ", ex);
+      logger.error(ex.toString());
     } 
     
 //    Do we need a finally with sc.close()
@@ -50,7 +52,18 @@ public class NatsClientImpl implements NatsClient {
 
     int random = (int) (Math.random() * 10000 + 1); // NOSONAR
     
-    Options cfOptions = new Options.Builder().natsUrl(natsUrl).clusterId(natsCluster).clientId(clientId + "-" +random).build();
+    Options cfOptions = new Options.Builder().natsUrl(natsUrl).clusterId(natsCluster).clientId(clientId + "-" +random)
+        .connectionListener((conn, type) -> {
+          if (type == ConnectionListener.Events.CONNECTED) {
+            logger.info("Connected to Nats Server");
+          } else if (type == ConnectionListener.Events.RECONNECTED) {
+            logger.info("Reconnected to Nats Server");
+          } else if (type == ConnectionListener.Events.DISCONNECTED) {
+            logger.error("Disconnected to Nats Server, reconnect attempt in seconds");
+          } else if (type == ConnectionListener.Events.CLOSED) {
+            logger.info("Closed connection with Nats Server");
+          }
+      }).build();
     StreamingConnectionFactory cf =
         new StreamingConnectionFactory(cfOptions);
     return cf;
