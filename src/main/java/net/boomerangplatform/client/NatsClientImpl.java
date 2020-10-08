@@ -7,6 +7,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import io.nats.client.ConnectionListener;
+import io.nats.streaming.AckHandler;
 import io.nats.streaming.Options;
 import io.nats.streaming.StreamingConnection;
 import io.nats.streaming.StreamingConnectionFactory;
@@ -21,24 +23,38 @@ public class NatsClientImpl implements NatsClient {
 
   @Value("${eventing.nats.cluster}")
   private String natsCluster;
-  
-  static private int CLIENT_ID_UNIQUE_INT = (int) (Math.random() * 10000 + 1); // NOSONAR 
-  
-  static private String CLIENT_ID_PREFIX = "listener";
+
+  @Value("${eventing.nats.channel}")
+  private String natsChannel;
+
+  static private int CLIENT_ID_UNIQUE_INT = (int) (Math.random() * 10000 + 1); // NOSONAR
+
+  static private String CLIENT_ID_PREFIX = "flow-listener-";
 
   @Override
   /*
    * Publishes CloudEvent payload to NATS
+   * 
    * @see https://github.com/cloudevents/spec/blob/master/nats-protocol-binding.md
    */
-  public void publish(String eventId, String channel, String jsonPayload) {
+  public void publish(String eventId, String jsonPayload) {
     try {
       StreamingConnectionFactory connectionFactory = getStreamingConnectionFactory();
 
       // `StreamingConnection` extends `AutoCloseable`, the connection closes
       // automatically after try statement
       try (StreamingConnection streamingConnection = connectionFactory.createConnection()) {
-        streamingConnection.publish(subject, jsonPayload.getBytes(StandardCharsets.UTF_8));
+        AckHandler ackHandler = new AckHandler() {
+          public void onAck(String guid, Exception err) {
+            if (err != null) {
+              logger.error("Error publishing message ID: " + guid + ", Error: " + err.getMessage());
+            } else {
+              logger.info("Received ack for message ID: " + guid);
+            }
+          }
+        };
+        String guid = streamingConnection.publish(natsChannel,
+            jsonPayload.getBytes(StandardCharsets.UTF_8), ackHandler);
       }
     } catch (IOException exception) {
       logger.error(exception.toString());
@@ -48,7 +64,7 @@ public class NatsClientImpl implements NatsClient {
     } catch (Exception exception) {
       logger.error(exception.toString());
     }
-    
+
   }
 
   /**
@@ -93,10 +109,21 @@ public class NatsClientImpl implements NatsClient {
    * @category Helper method.
    */
   private StreamingConnectionFactory getStreamingConnectionFactory() {
-    logger.info("Initializng subscriptions to NATS with Client ID: " + CLIENT_ID_PREFIX + "-" + CLIENT_ID_UNIQUE_INT);
+    logger.info("Initializng subscriptions to NATS with URL: " + natsUrl + ", Cluster: "
+        + natsCluster + ", Client ID: " + CLIENT_ID_PREFIX + CLIENT_ID_UNIQUE_INT);
 
-    Options options = new Options.Builder().natsUrl(natsUrl).clusterId(natsCluster).clientId(CLIENT_ID_PREFIX + "-" + CLIENT_ID_UNIQUE_INT)
-        .build();
+    Options options = new Options.Builder().natsUrl(natsUrl).clusterId(natsCluster)
+        .clientId(CLIENT_ID_PREFIX + CLIENT_ID_UNIQUE_INT).connectionListener((conn, type) -> {
+          if (type == ConnectionListener.Events.CONNECTED) {
+            logger.info("Connected to Nats Server");
+          } else if (type == ConnectionListener.Events.RECONNECTED) {
+            logger.info("Reconnected to Nats Server");
+          } else if (type == ConnectionListener.Events.DISCONNECTED) {
+            logger.error("Disconnected to Nats Server, reconnect attempt in seconds");
+          } else if (type == ConnectionListener.Events.CLOSED) {
+            logger.info("Closed connection with Nats Server");
+          }
+        }).build();
     return new StreamingConnectionFactory(options);
   }
 }

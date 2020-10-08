@@ -27,8 +27,6 @@ public class EventProcessorImpl implements EventProcessor {
 
   private static final String TYPE_PREFIX = "io.boomerang.eventing.";
 
-  private static final String SUBJECT = "flow-workflow-execute";
-
   @Value("${eventing.enabled}")
   private Boolean eventingEnabled;
 
@@ -63,9 +61,9 @@ public class EventProcessorImpl implements EventProcessor {
     logger.info("CloudEvent Object - " + jsonPayload);
 
     if (eventingEnabled) {
-      natsClient.publish(eventId, SUBJECT, jsonPayload);
+      natsClient.publish(eventId, jsonPayload);
     } else {
-      workflowClient.executeWorkflowPut(SUBJECT, cloudEvent);
+      workflowClient.executeWorkflowPut(cloudEvent);
     }
 
     return HttpStatus.OK;
@@ -103,9 +101,9 @@ public class EventProcessorImpl implements EventProcessor {
     logger.info("CloudEvent Object - " + jsonPayload);
 
     if (eventingEnabled) {
-      natsClient.publish(eventId, SUBJECT, jsonPayload);
+      natsClient.publish(eventId, jsonPayload);
     } else {
-      workflowClient.executeWorkflowPut(SUBJECT, cloudEvent);
+      workflowClient.executeWorkflowPut(cloudEvent);
     }
 
     return HttpStatus.OK;

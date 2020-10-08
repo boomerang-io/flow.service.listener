@@ -35,7 +35,7 @@ public class WorkflowClientImpl implements WorkflowClient {
 
   // TODO return a wfActivityId
   @Override
-  public void executeWorkflowPut(String subject, CloudEventImpl<JsonNode> jsonPayload) {
+  public void executeWorkflowPut(CloudEventImpl<JsonNode> jsonPayload) {
     final HttpHeaders headers = new HttpHeaders();
     headers.add("Content-Type", "application/cloudevents+json");
 
