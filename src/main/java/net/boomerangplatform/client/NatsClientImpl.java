@@ -3,8 +3,8 @@ package net.boomerangplatform.client;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeoutException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import io.nats.streaming.Options;
@@ -14,80 +14,92 @@ import io.nats.streaming.StreamingConnectionFactory;
 @Service
 public class NatsClientImpl implements NatsClient {
 
-  private static final Logger logger = Logger.getLogger(NatsClientImpl.class.getName());
+  private static final Logger logger = LogManager.getLogger(NatsClientImpl.class);
 
   @Value("${eventing.nats.url}")
   private String natsUrl;
 
   @Value("${eventing.nats.cluster}")
   private String natsCluster;
+  
+//  static private int CLIENT_ID_UNIQUE_INT = (int) (Math.random() * 10000 + 1); // NOSONAR 
+  
+//  static private String CLIENT_ID_PREFIX = "listener";
 
-  @Override
-  /*
-   * Publishes CloudEvent payload to NATS
-   * https://github.com/cloudevents/spec/blob/master/nats-protocol-binding.md
+  /**
+   * Publishes CloudEvent payload to NATS.
+   * 
+   * @see https://github.com/cloudevents/spec/blob/master/nats-protocol-binding.md
    */
+  @Override
   public void publish(String eventId, String subject, String jsonPayload) {
     try {
-      StreamingConnectionFactory cf = getStreamingConnectionFactory("listener");
+      StreamingConnectionFactory connectionFactory = getStreamingConnectionFactory("listener");
 
-      StreamingConnection sc = cf.createConnection();
-      sc.publish(subject, jsonPayload.getBytes(StandardCharsets.UTF_8));
+      // `StreamingConnection` extends `AutoCloseable`, the connection closes
+      // automatically after try statement
+      try (StreamingConnection streamingConnection = connectionFactory.createConnection()) {
+        streamingConnection.publish(subject, jsonPayload.getBytes(StandardCharsets.UTF_8));
+      }
 
-    } catch (IOException e) {
-      logger.log(Level.SEVERE, "Error: ", e);
-    } catch (InterruptedException | TimeoutException ex) {
+    } catch (IOException exception) {
+      logger.error(exception.toString());
+    } catch (InterruptedException | TimeoutException exception) {
       Thread.currentThread().interrupt();
-      logger.log(Level.SEVERE, "Error: ", ex);
+      logger.error(exception.toString());
+    } catch (Exception exception) {
+      logger.error(exception.toString());
     }
-
-    // Do we need a finally with sc.close()
-
+    
   }
 
-  private StreamingConnectionFactory getStreamingConnectionFactory(String clientId) {
-    logger.info("Initializng subscriptions to NATS");
-
-    int random = (int) (Math.random() * 10000 + 1); // NOSONAR
-
-    Options cfOptions = new Options.Builder().natsUrl(natsUrl).clusterId(natsCluster)
-        .clientId(clientId + "-" + random).build();
-    StreamingConnectionFactory cf = new StreamingConnectionFactory(cfOptions);
-    return cf;
-  }
-
-  @Override
-  /*
-   * Subscribes to CloudEvent payload for a response
-   * https://github.com/cloudevents/spec/blob/master/nats-protocol-binding.md
+  /**
+   * Subscribes to CloudEvent payload for a response.
+   * 
+   * @throws InterruptedException
+   * @throws IOException
+   * 
+   * @see https://github.com/cloudevents/spec/blob/master/nats-protocol-binding.md
    */
-  public void subscribe(String eventId, String subject) throws TimeoutException {
-    //
+  @Override
+  public void subscribe(String eventId, String subject) {
+
+    // @formatter:off
     // logger.info("Initializng subscriptions to NATS");
     //
     // int random = (int) (Math.random() * 10000 + 1); // NOSONAR
     //
-    // Options cfOptions = new
-    // Options.Builder().natsUrl(natsUrl).clusterId(natsCluster).clientId("flow-workflow-" +
-    // random).build();
-    // StreamingConnectionFactory cf = new StreamingConnectionFactory(cfOptions);
+    // Options cfOptions = new Options.Builder().natsUrl(natsUrl).clusterId(natsCluster)
+    //         .clientId("flow-workflow-" + random).build();
+    // StreamingConnectionFactory connectionFactory = new StreamingConnectionFactory(cfOptions);
     //
-    // try {
-    // this.streamingConnection = cf.createConnection();
+    // try (StreamingConnection streamingConnection = connectionFactory.createConnection()) {
     //
-    // Subscription subscription =
-    // streamingConnection.subscribe(SUBJECT, QUEUE, new MessageHandler() { // NOSONAR
-    // @Override
-    // public void onMessage(Message m) {
+    //     streamingConnection.subscribe("SUBJECT", "QUEUE", new MessageHandler() {
     //
-    // eventProcessor.processMessage(new String(m.getData()));
+    //         @Override
+    //         public void onMessage(Message msg) {
+    //             eventProcessor.processMessage(new String(msg.getData()));
+    //         }
+    //     });
+    // } catch (IOException exception) {
+    //     logger.log(Level.SEVERE, "Error: ", exception);
+    // } catch (InterruptedException | TimeoutException exception) {
+    //     Thread.currentThread().interrupt();
     // }
-    // }, new SubscriptionOptions.Builder().durableName("durable").build());
-    // } catch (IOException ex) {
-    // logger.error(ex);
-    // } catch (InterruptedException ex) {
-    // Thread.currentThread().interrupt();
-    // }
-    //// TODO do we close connection and subscription?
+    // // TODO do we close connection and subscription?
+    // @formatter:on
+  }
+
+  /**
+   * @category Helper method.
+   */
+  private StreamingConnectionFactory getStreamingConnectionFactory(String prefix) {
+    int random = (int) (Math.random() * 10000 + 1); // NOSONAR
+    logger.info("Initializng subscriptions to NATS with Client ID: " + prefix + "-" + random);
+
+    Options options = new Options.Builder().natsUrl(natsUrl).clusterId(natsCluster).clientId(prefix + "-" + random)
+        .build();
+    return new StreamingConnectionFactory(options);
   }
 }
