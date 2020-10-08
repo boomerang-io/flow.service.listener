@@ -26,13 +26,12 @@ public class NatsClientImpl implements NatsClient {
   
   static private String CLIENT_ID_PREFIX = "listener";
 
-  /**
-   * Publishes CloudEvent payload to NATS.
-   * 
+  @Override
+  /*
+   * Publishes CloudEvent payload to NATS
    * @see https://github.com/cloudevents/spec/blob/master/nats-protocol-binding.md
    */
-  @Override
-  public void publish(String eventId, String subject, String jsonPayload) {
+  public void publish(String eventId, String channel, String jsonPayload) {
     try {
       StreamingConnectionFactory connectionFactory = getStreamingConnectionFactory();
 
@@ -41,7 +40,6 @@ public class NatsClientImpl implements NatsClient {
       try (StreamingConnection streamingConnection = connectionFactory.createConnection()) {
         streamingConnection.publish(subject, jsonPayload.getBytes(StandardCharsets.UTF_8));
       }
-
     } catch (IOException exception) {
       logger.error(exception.toString());
     } catch (InterruptedException | TimeoutException exception) {
