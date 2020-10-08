@@ -1,13 +1,18 @@
 package net.boomerangplatform.service;
 
-import java.util.Map;
-import org.springframework.http.HttpStatus;
+import java.net.URI;
+
 import com.fasterxml.jackson.databind.JsonNode;
+
+import org.springframework.http.HttpStatus;
+
+import io.cloudevents.CloudEvent;
+import io.cloudevents.v1.AttributesImpl;
 
 public interface EventProcessor {
 
-  HttpStatus routeCloudEvent(String token, String requestUrl, Map<String, Object> headers, JsonNode payload);
+  HttpStatus routeCloudEvent(CloudEvent<AttributesImpl, JsonNode> cloudEvent, String token, URI uri);
 
-  HttpStatus routeWebhookEvent(String token, String string, String trigger, String workflowId,
-      JsonNode payload, String workflowActivityId, String topic);
+  HttpStatus routeWebhookEvent(String token, String requestUri, String trigger, String workflowId, JsonNode payload,
+      String workflowActivityId, String topic);
 }
