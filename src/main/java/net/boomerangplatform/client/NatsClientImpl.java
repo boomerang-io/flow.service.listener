@@ -48,9 +48,9 @@ public class NatsClientImpl implements NatsClient {
   }
 
   private StreamingConnectionFactory getStreamingConnectionFactory(String clientId) {
-    logger.info("Initializng subscriptions to NATS");
-
     int random = (int) (Math.random() * 10000 + 1); // NOSONAR
+    
+    logger.info("Initializng subscriptions to NATS with URL: " + natsUrl + ", Cluster: " + natsCluster + ", Client ID: " + clientId + "-" +random);
     
     Options cfOptions = new Options.Builder().natsUrl(natsUrl).clusterId(natsCluster).clientId(clientId + "-" +random)
         .connectionListener((conn, type) -> {
