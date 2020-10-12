@@ -1,4 +1,4 @@
-# Boomerang Flow Listener service <!-- omit in toc -->
+# Boomerang Flow Listener Service <!-- omit in toc -->
 
 ## Table of Contents
 - [Table of Contents](#table-of-contents)
@@ -17,7 +17,7 @@
 - [License](#license)
 
 ## Description
-Boomerang Flow Listener is a Spring Boot microservice designed to consume events based on the [CloudEvents](cloudevents.io) specification and industry standard to describe events in a common way.
+Boomerang Flow Listener is a Spring Boot microservice designed to consume events based on the [CloudEvents](https://cloudevents.io) specification and industry standard to describe events in a common way.
 
 It also has domain specific endpoints to consume events from specific sources that may not meet this specification such as DockerHub and Slack webhooks.
 
