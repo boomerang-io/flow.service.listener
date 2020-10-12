@@ -13,6 +13,8 @@
 - [Testing](#testing)
   - [NATS Integration](#nats-integration)
 - [Known Issues](#known-issues)
+- [Contributing](#contributing)
+- [License](#license)
 
 ## Description
 Boomerang Flow Listener is a Spring Boot microservice designed to consume events based on the [CloudEvents](cloudevents.io) specification and industry standard to describe events in a common way.
@@ -91,3 +93,13 @@ See [NATS Streaming on Docker Hub](https://hub.docker.com/_/nats-streaming) for 
 ## Known Issues
 
 Need to kill NATS streaming pod after restarting minikube.
+
+## Contributing
+
+Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
+
+Please make sure to update tests as appropriate.
+
+## License
+
+All of our work is licenses under the [Apache License Version 2.0](https://www.apache.org/licenses/LICENSE-2.0) unless specified otherwise due to constraints by dependencies.
