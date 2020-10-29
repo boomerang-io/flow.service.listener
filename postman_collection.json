@@ -1,0 +1,135 @@
+{
+	"info": {
+		"_postman_id": "55011956-aa56-4278-ace6-dad9ef5fa191",
+		"name": "Boomerang Flow Listener",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Webhook - DockerHub",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"callback_url\": \"https://registry.hub.docker.com/u/svendowideit/testhook/hook/2141b5bi5i5b02bec211i4eeih0242eg11000a/\",\n  \"push_data\": {\n    \"images\": [\n        \"27d47432a69bca5f2700e4dff7de0388ed65f9d3fb1ec645e2bc24c223dc1cc3\",\n        \"51a9c7c1f8bb2fa19bcd09789a34e63f35abb80044bc10196e304f6634cc582c\",\n        \"...\"\n    ],\n    \"pushed_at\": 1.417566161e+09,\n    \"pusher\": \"trustedbuilder\",\n    \"tag\": \"latest\"\n  },\n  \"repository\": {\n    \"comment_count\": 0,\n    \"date_created\": 1.417494799e+09,\n    \"description\": \"\",\n    \"dockerfile\": \"#\\n# BUILD\\u0009\\u0009docker build -t svendowideit/apt-cacher .\\n# RUN\\u0009\\u0009docker run -d -p 3142:3142 -name apt-cacher-run apt-cacher\\n#\\n# and then you can run containers with:\\n# \\u0009\\u0009docker run -t -i -rm -e http_proxy http://192.168.1.2:3142/ debian bash\\n#\\nFROM\\u0009\\u0009ubuntu\\n\\n\\nVOLUME\\u0009\\u0009[/var/cache/apt-cacher-ng]\\nRUN\\u0009\\u0009apt-get update ; apt-get install -yq apt-cacher-ng\\n\\nEXPOSE \\u0009\\u00093142\\nCMD\\u0009\\u0009chmod 777 /var/cache/apt-cacher-ng ; /etc/init.d/apt-cacher-ng start ; tail -f /var/log/apt-cacher-ng/*\\n\",\n    \"full_description\": \"Docker Hub based automated build from a GitHub repo\",\n    \"is_official\": false,\n    \"is_private\": true,\n    \"is_trusted\": true,\n    \"name\": \"testhook\",\n    \"namespace\": \"svendowideit\",\n    \"owner\": \"svendowideit\",\n    \"repo_name\": \"svendowideit/testhook\",\n    \"repo_url\": \"https://registry.hub.docker.com/u/svendowideit/testhook/\",\n    \"star_count\": 0,\n    \"status\": \"Active\"\n  }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:7720/listener/webhook?workflowId=5f74d0293979cd04c7f8afa1?access_token=60588A4632FB5843E10E2A7C0E976B016E7386E068DCB8E335D1E5E42C1478E7&type=dockerhub",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "7720",
+					"path": [
+						"listener",
+						"webhook"
+					],
+					"query": [
+						{
+							"key": "workflowId",
+							"value": "5f74d0293979cd04c7f8afa1?access_token=60588A4632FB5843E10E2A7C0E976B016E7386E068DCB8E335D1E5E42C1478E7"
+						},
+						{
+							"key": "type",
+							"value": "dockerhub"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Webhook - Slack - url_verification",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"token\": \"Jhj5dZrVaK7ZwHHjRyZWjbDl\",\n    \"challenge\": \"3eZbrw1aBm2rZgRNFdxV2595E9CY3gmdALWMmHkvFXO7tYXAYM8P\",\n    \"type\": \"url_verification\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:7720/listener/webhhook?workflowId=5f74d0293979cd04c7f8afa1&type=slack&access_token=60588A4632FB5843E10E2A7C0E976B016E7386E068DCB8E335D1E5E42C1478E7",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "7720",
+					"path": [
+						"listener",
+						"webhhook"
+					],
+					"query": [
+						{
+							"key": "workflowId",
+							"value": "5f74d0293979cd04c7f8afa1"
+						},
+						{
+							"key": "type",
+							"value": "slack"
+						},
+						{
+							"key": "access_token",
+							"value": "60588A4632FB5843E10E2A7C0E976B016E7386E068DCB8E335D1E5E42C1478E7"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Webhook - Slack - event",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"token\": \"XXYYZZ\",\n    \"team_id\": \"TXXXXXXXX\",\n    \"api_app_id\": \"AXXXXXXXXX\",\n    \"event\": {\n    \"type\": \"reaction_added\",\n    \"user\": \"U024BE7LH\",\n    \"reaction\": \"thumbsup\",\n    \"item_user\": \"U0G9QF9C6\",\n    \"item\": {\n        \"type\": \"message\",\n        \"channel\": \"C0G9QF9GZ\",\n        \"ts\": \"1360782400.498405\"\n    },\n    \"event_ts\": \"1360782804.083113\"\n    },\n    \"type\": \"event_callback\",\n    \"authed_teams\": [],\n    \"event_id\": \"EvXXXXXXXX\",\n    \"event_time\": 1234567890\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:7720/listener/webhhook?workflowId=5f74d0293979cd04c7f8afa1&type=slack&access_token=60588A4632FB5843E10E2A7C0E976B016E7386E068DCB8E335D1E5E42C1478E7",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "7720",
+					"path": [
+						"listener",
+						"webhhook"
+					],
+					"query": [
+						{
+							"key": "workflowId",
+							"value": "5f74d0293979cd04c7f8afa1"
+						},
+						{
+							"key": "type",
+							"value": "slack"
+						},
+						{
+							"key": "access_token",
+							"value": "60588A4632FB5843E10E2A7C0E976B016E7386E068DCB8E335D1E5E42C1478E7"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"protocolProfileBehavior": {}
+}

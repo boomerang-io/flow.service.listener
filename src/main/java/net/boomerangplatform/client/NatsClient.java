@@ -1,9 +1,10 @@
 package net.boomerangplatform.client;
 
-import net.boomerangplatform.model.Event;
+import java.util.concurrent.TimeoutException;
 
 public interface NatsClient {
 
-  void publishMessage(Event event, String action);
+  void subscribe(String eventId, String subject) throws TimeoutException;
 
+  void publish(String eventId, String jsonPayload);
 }

@@ -1,42 +1,60 @@
 package net.boomerangplatform.tests;
 
-import static org.junit.Assert.assertNotNull;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 import java.io.IOException;
+import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.security.test.context.support.WithUserDetails;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import net.boomerangplatform.Application;
-import net.boomerangplatform.MongoConfig;
-import net.boomerangplatform.controller.EventController;
-import net.boomerangplatform.model.Event;
+import org.springframework.test.web.client.MockRestServiceServer;
+import org.springframework.web.client.RestTemplate;
+import net.boomerangplatform.service.EventProcessor;
 
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = {Application.class, MongoConfig.class})
 @SpringBootTest
-@ActiveProfiles("local")
-@WithMockUser(roles = {"admin"})
-@WithUserDetails("mdroy@us.ibm.com")
 public class EventControllerTests {
 
+  @Value("${workflow.service.url.execute}")
+  private String executeWorkflowUrl;
+
+  @Value("${workflow.service.url.validateToken}")
+  private String validateTokenWorkflowUrl;
+
   @Autowired
-  private EventController eventController;
+  RestTemplate restTemplate;
+
+  private MockRestServiceServer server;
+
+  @Autowired
+  private EventProcessor eventProcessor;
+  
+  @Before
+  public void init() {
+     this.server = MockRestServiceServer.createServer(restTemplate);
+  }
 
   @Test
-  public void testCreatingEvent() throws IOException {
+  public void testSubjectToWorkflowIdAndTopic() throws IOException {
+    String subject = "/5f74d0293979cd04c7f8afa1/Custom Topic";
+    String[] splitArr = subject.split("/");
+    System.out.println(splitArr.length);
 
-    Event event = new Event();
-    event.setDetail("hello", "world");
+    for (Integer i = 0; i < splitArr.length; i++) {
+      System.out.println(splitArr[i]);
+    }
+  }
+  
+  @Test
+  public void testValidateToken() throws IOException {
 
-    ResponseEntity response = eventController.acceptPayload("mail", new Event());
+    server = MockRestServiceServer.bindTo(restTemplate).ignoreExpectOrder(true).build();
+    
+    String workflowId = "5f74d0293979cd04c7f8afa1";
 
-    assertNotNull(response);
-
+    this.server.expect(requestTo(validateTokenWorkflowUrl.replace("{workflowId}", workflowId))).andRespond(
+        withSuccess());
+    
+//    eventProcessor.routeWebhookEvent(token, requestUri, target, workflowId, payload);
   }
 }
