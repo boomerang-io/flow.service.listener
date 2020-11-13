@@ -28,8 +28,8 @@ public class EventProcessorImpl implements EventProcessor {
 
   private static final String TYPE_PREFIX = "io.boomerang.eventing.";
 
-  @Value("${eventing.enabled}")
-  private Boolean eventingEnabled;
+  @Value("${eventing.nats.enabled}")
+  private Boolean natsEnabled;
 
   @Value("${eventing.auth.enabled}")
   private Boolean authorizationEnabled;
@@ -61,7 +61,7 @@ public class EventProcessorImpl implements EventProcessor {
     final String jsonPayload = Json.encode(cloudEvent);
     logger.info("CloudEvent Object - " + jsonPayload);
 
-    if (eventingEnabled) {
+    if (natsEnabled) {
       natsClient.publish(eventId, jsonPayload);
     } else {
       workflowClient.executeWorkflowPut(cloudEvent);
@@ -94,7 +94,7 @@ public class EventProcessorImpl implements EventProcessor {
 
     logger.info("routeCloudEvent() - Forwarded CloudEvent Data: " + forwardedCloudEvent.getData().get());
 
-    if (eventingEnabled) {
+    if (natsEnabled) {
       natsClient.publish(eventId, forwardedCloudEvent.getData().get().toString());
     } else {
       workflowClient.executeWorkflowPut(forwardedCloudEvent);
