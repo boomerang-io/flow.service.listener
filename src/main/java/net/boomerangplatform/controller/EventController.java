@@ -1,13 +1,10 @@
 package net.boomerangplatform.controller;
 
 import javax.servlet.http.HttpServletRequest;
-
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -15,7 +12,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
-
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.cloudevents.CloudEvent;
 import io.cloudevents.v1.AttributesImpl;
 import net.boomerangplatform.attributes.CloudEventAttribute;
@@ -92,10 +90,19 @@ public class EventController {
    * <code>/webhook/wfe?workflowId={workflowId}&access_token={access_token}&topic={topic}&workflowActivityId={workflowActivityId}</code>
    */
   @PostMapping(value = "/webhook/wfe", consumes = "application/json; charset=utf-8")
-  public ResponseEntity<?> acceptWebhookEvent(HttpServletRequest request, @RequestParam String workflowId,
+  public ResponseEntity<?> acceptWaitForEvent(HttpServletRequest request, @RequestParam String workflowId,
       @RequestParam String workflowActivityId, @RequestParam String topic, @RequestBody JsonNode payload,
       @TokenAttribute String token) {
     eventProcessor.routeWebhookEvent(token, request.getRequestURL().toString(), "wfe", workflowId, payload,
+        workflowActivityId, topic);
+    return ResponseEntity.ok(HttpStatus.OK);
+  }
+  
+  @GetMapping(value = "/webhook/wfe")
+  public ResponseEntity<?> acceptWaitForEvent(HttpServletRequest request, @RequestParam String workflowId,
+      @RequestParam String workflowActivityId, @RequestParam String topic,
+      @TokenAttribute String token) {
+    eventProcessor.routeWebhookEvent(token, request.getRequestURL().toString(), "wfe", workflowId, null,
         workflowActivityId, topic);
     return ResponseEntity.ok(HttpStatus.OK);
   }
