@@ -53,6 +53,9 @@ public class EventProcessorImpl implements EventProcessor {
       return HttpStatus.FORBIDDEN;
     }
     
+    if (!"failure".equals(status) || !"success".equals(status)) {
+      status = "success";
+    }
     CustomAttributeExtension statusCAE = new CustomAttributeExtension("status", status);
 
     final CloudEventImpl<JsonNode> cloudEvent = CloudEventBuilder.<JsonNode>builder().withType(eventType).withExtension(statusCAE)
@@ -90,7 +93,11 @@ public class EventProcessorImpl implements EventProcessor {
     
     CustomAttributeExtension statusCAE = new CustomAttributeExtension("status", "success");
     if (cloudEvent.getExtensions() != null && !cloudEvent.getExtensions().isEmpty() && cloudEvent.getExtensions().containsKey("status")) {
-      statusCAE = new CustomAttributeExtension("status", (String) cloudEvent.getExtensions().get("status"));
+      String status = (String) cloudEvent.getExtensions().get("status");
+      if (!"failure".equals(status) || !"success".equals(status)) {
+        status = "success";
+      }
+      statusCAE = new CustomAttributeExtension("status", status);
     }
 
     final CloudEventImpl<JsonNode> forwardedCloudEvent = CloudEventBuilder.<JsonNode>builder().withType(eventType).withExtension(statusCAE)
