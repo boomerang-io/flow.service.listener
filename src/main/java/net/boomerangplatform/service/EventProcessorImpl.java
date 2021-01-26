@@ -93,8 +93,9 @@ public class EventProcessorImpl implements EventProcessor {
     
     String status = "success";
     if (cloudEvent.getExtensions() != null && cloudEvent.getExtensions().containsKey("status")) {
-      if ("failure".equals((String) cloudEvent.getExtensions().get("status"))) {
-        status = "failure";
+      String statusExtension = cloudEvent.getExtensions().get("status").toString();
+      if ("failure".equals(statusExtension)) {
+        status = statusExtension;
       }
     }
     CustomAttributeExtension statusCAE = new CustomAttributeExtension("status", status);
