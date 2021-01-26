@@ -53,6 +53,7 @@ public class EventProcessorImpl implements EventProcessor {
       return HttpStatus.FORBIDDEN;
     }
     
+    logger.info("CloudEvent Extension (status): " + status);
     if (!"failure".equals(status) || !"success".equals(status)) {
       status = "success";
     }
