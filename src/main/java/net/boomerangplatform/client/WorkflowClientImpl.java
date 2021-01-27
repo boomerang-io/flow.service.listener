@@ -39,7 +39,9 @@ public class WorkflowClientImpl implements WorkflowClient {
     final HttpHeaders headers = new HttpHeaders();
     headers.add("Content-Type", "application/cloudevents+json");
 
-    final HttpEntity<CloudEventImpl<JsonNode>> req = new HttpEntity<>(jsonPayload, headers);
+    LOGGER.info("executeWorkflowPut() - CloudEvent: " + jsonPayload.getData().get().toPrettyString());
+
+    final HttpEntity<String> req = new HttpEntity<>(jsonPayload.getData().get().toString(), headers);
 
     LOGGER.info("executeWorkflowPut() - Request: " + req.toString());
 
