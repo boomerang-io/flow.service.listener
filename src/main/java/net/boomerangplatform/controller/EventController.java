@@ -28,6 +28,8 @@ public class EventController {
 
   @Autowired
   private EventProcessor eventProcessor;
+  
+  private static String STATUS_SUCCESS = "success";
 
   /**
    * HTTP Webhook accepting Generic, Slack, and Dockerhub subtypes. For Slack and
@@ -62,7 +64,7 @@ public class EventController {
           return ResponseEntity.ok(response);
         } else if (payload != null && "event_callback".equals(payload.path("type").asText())) {
           eventProcessor.routeWebhookEvent(token, request.getRequestURL().toString(), "slack", workflowId, payload,
-              null, null);
+              null, null, STATUS_SUCCESS);
           return ResponseEntity.ok(HttpStatus.NO_CONTENT);
         } else {
           return ResponseEntity.badRequest().build();
@@ -70,12 +72,12 @@ public class EventController {
       case dockerhub:
         // TODO: dockerhub callback_url validation
         eventProcessor.routeWebhookEvent(token, request.getRequestURL().toString(), "dockerhub", workflowId, payload,
-            null, null);
+            null, null, STATUS_SUCCESS);
         return ResponseEntity.ok(HttpStatus.OK);
 
       case generic:
         eventProcessor.routeWebhookEvent(token, request.getRequestURL().toString(), "webhook", workflowId, payload,
-            null, null);
+            null, null, STATUS_SUCCESS);
         return ResponseEntity.ok(HttpStatus.OK);
 
       default:
@@ -91,19 +93,19 @@ public class EventController {
    */
   @PostMapping(value = "/webhook/wfe", consumes = "application/json; charset=utf-8")
   public ResponseEntity<?> acceptWaitForEvent(HttpServletRequest request, @RequestParam String workflowId,
-      @RequestParam String workflowActivityId, @RequestParam String topic, @RequestBody JsonNode payload,
-      @TokenAttribute String token) {
+      @RequestParam String workflowActivityId, @RequestParam String topic, @RequestParam(defaultValue = "success") String status,
+      @RequestBody JsonNode payload, @TokenAttribute String token) {
     eventProcessor.routeWebhookEvent(token, request.getRequestURL().toString(), "wfe", workflowId, payload,
-        workflowActivityId, topic);
+        workflowActivityId, topic, status);
     return ResponseEntity.ok(HttpStatus.OK);
   }
   
   @GetMapping(value = "/webhook/wfe")
   public ResponseEntity<?> acceptWaitForEvent(HttpServletRequest request, @RequestParam String workflowId,
-      @RequestParam String workflowActivityId, @RequestParam String topic,
+      @RequestParam String workflowActivityId, @RequestParam String topic, @RequestParam(defaultValue = "success") String status,
       @TokenAttribute String token) {
     eventProcessor.routeWebhookEvent(token, request.getRequestURL().toString(), "wfe", workflowId, null,
-        workflowActivityId, topic);
+        workflowActivityId, topic, status);
     return ResponseEntity.ok(HttpStatus.OK);
   }
 

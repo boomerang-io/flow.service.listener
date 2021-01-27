@@ -3,16 +3,13 @@ package net.boomerangplatform.service;
 import java.net.URI;
 import java.time.ZonedDateTime;
 import java.util.UUID;
-
-import com.fasterxml.jackson.databind.JsonNode;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-
+import com.fasterxml.jackson.databind.JsonNode;
 import io.cloudevents.CloudEvent;
 import io.cloudevents.json.Json;
 import io.cloudevents.v1.AttributesImpl;
@@ -20,6 +17,7 @@ import io.cloudevents.v1.CloudEventBuilder;
 import io.cloudevents.v1.CloudEventImpl;
 import net.boomerangplatform.client.NatsClient;
 import net.boomerangplatform.client.WorkflowClient;
+import net.boomerangplatform.model.CustomAttributeExtension;
 
 @Service
 public class EventProcessorImpl implements EventProcessor {
@@ -42,7 +40,7 @@ public class EventProcessorImpl implements EventProcessor {
 
   @Override
   public HttpStatus routeWebhookEvent(String token, String requestUri, String trigger, String workflowId,
-      JsonNode payload, String workflowActivityId, String topic) {
+      JsonNode payload, String workflowActivityId, String topic, String status) {
     final String eventId = UUID.randomUUID().toString();
     final String eventType = TYPE_PREFIX + trigger;
     final URI uri = URI.create(requestUri);
@@ -54,12 +52,17 @@ public class EventProcessorImpl implements EventProcessor {
     if (!checkAccess(workflowId, token)) {
       return HttpStatus.FORBIDDEN;
     }
+    
+    if (!"failure".equals(status)) {
+      status = "success";
+    }
+    CustomAttributeExtension statusCAE = new CustomAttributeExtension("status", status);
 
-    final CloudEventImpl<JsonNode> cloudEvent = CloudEventBuilder.<JsonNode>builder().withType(eventType)
+    final CloudEventImpl<JsonNode> cloudEvent = CloudEventBuilder.<JsonNode>builder().withType(eventType).withExtension(statusCAE)
         .withId(eventId).withSource(uri).withData(payload).withSubject(subject).withTime(ZonedDateTime.now()).build();
 
     final String jsonPayload = Json.encode(cloudEvent);
-    logger.info("CloudEvent Object - " + jsonPayload);
+    logger.debug("CloudEvent Object - " + jsonPayload);
 
     if (natsEnabled) {
       natsClient.publish(eventId, jsonPayload);
@@ -87,12 +90,21 @@ public class EventProcessorImpl implements EventProcessor {
     if (!checkAccess(getWorkflowIdFromSubject(subject), token)) {
       return HttpStatus.FORBIDDEN;
     }
+    
+    String status = "success";
+    if (cloudEvent.getExtensions() != null && cloudEvent.getExtensions().containsKey("status")) {
+      String statusExtension = cloudEvent.getExtensions().get("status").toString();
+      if ("failure".equals(statusExtension)) {
+        status = statusExtension;
+      }
+    }
+    CustomAttributeExtension statusCAE = new CustomAttributeExtension("status", status);
 
-    final CloudEventImpl<JsonNode> forwardedCloudEvent = CloudEventBuilder.<JsonNode>builder().withType(eventType)
+    final CloudEventImpl<JsonNode> forwardedCloudEvent = CloudEventBuilder.<JsonNode>builder().withType(eventType).withExtension(statusCAE)
         .withId(eventId).withSource(uri).withData(cloudEvent.getData().get()).withSubject(subject)
         .withTime(ZonedDateTime.now()).build();
 
-    logger.info("routeCloudEvent() - Forwarded CloudEvent Data: " + forwardedCloudEvent.getData().get());
+    logger.debug("routeCloudEvent() - Forwarded CloudEvent Data: " + forwardedCloudEvent.getData().get());
 
     if (natsEnabled) {
       natsClient.publish(eventId, forwardedCloudEvent.getData().get().toString());
@@ -105,7 +117,7 @@ public class EventProcessorImpl implements EventProcessor {
 
   private Boolean checkAccess(String workflowId, String token) {
     if (authorizationEnabled) {
-      logger.info("checkAccess() - Token: " + token);
+      logger.debug("checkAccess() - Token: " + token);
       if (token != null) {
         return workflowClient.validateWorkflowToken(workflowId, token);
       } else {
