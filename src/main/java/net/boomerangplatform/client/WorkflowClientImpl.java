@@ -39,19 +39,15 @@ public class WorkflowClientImpl implements WorkflowClient {
     final HttpHeaders headers = new HttpHeaders();
     headers.add("Content-Type", "application/cloudevents+json");
 
-    LOGGER.info("executeWorkflowPut() - CloudEvent Attributes: " + jsonPayload.getAttributes().toString());
-    LOGGER.info("executeWorkflowPut() - CloudEvent Data: " + jsonPayload.getData().get().toPrettyString());
-
     final HttpEntity<CloudEventImpl<JsonNode>> req = new HttpEntity<>(jsonPayload, headers);
 
-    LOGGER.info("executeWorkflowPut() - Request Headers: " + req.getHeaders().toString());
-    LOGGER.info("executeWorkflowPut() - Request Body Attributes: " + req.getBody().getAttributes().toString());
-    LOGGER.info("executeWorkflowPut() - Request Body Data: " + req.getBody().getData().get().toString());
+    LOGGER.debug("executeWorkflowPut() - Request Body Attributes: " + req.getBody().getAttributes().toString());
+    LOGGER.debug("executeWorkflowPut() - Request Body Data: " + req.getBody().getData().get().toString());
 
     ResponseEntity<String> responseEntity = restTemplate.exchange(executeWorkflowUrl, HttpMethod.PUT, req,
         String.class);
 
-    LOGGER.info("postWebhookEvent() - Status Code: " + responseEntity.getStatusCode());
+    LOGGER.debug("executeWorkflowPut() - Status Code: " + responseEntity.getStatusCode());
   }
 
   @Override
@@ -68,7 +64,7 @@ public class WorkflowClientImpl implements WorkflowClient {
           restTemplate.exchange(validateTokenWorkflowUrl.replace("{workflowId}", workflowId),
               HttpMethod.POST, req, String.class);
 
-      LOGGER.info("validateWorkflowToken() - Status Code: " + responseEntity.getStatusCode());
+      LOGGER.debug("validateWorkflowToken() - Status Code: " + responseEntity.getStatusCode());
 
       return HttpStatus.OK.equals(responseEntity.getStatusCode());
     }

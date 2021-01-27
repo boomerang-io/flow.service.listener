@@ -62,7 +62,7 @@ public class EventProcessorImpl implements EventProcessor {
         .withId(eventId).withSource(uri).withData(payload).withSubject(subject).withTime(ZonedDateTime.now()).build();
 
     final String jsonPayload = Json.encode(cloudEvent);
-    logger.info("CloudEvent Object - " + jsonPayload);
+    logger.debug("CloudEvent Object - " + jsonPayload);
 
     if (natsEnabled) {
       natsClient.publish(eventId, jsonPayload);
@@ -104,7 +104,7 @@ public class EventProcessorImpl implements EventProcessor {
         .withId(eventId).withSource(uri).withData(cloudEvent.getData().get()).withSubject(subject)
         .withTime(ZonedDateTime.now()).build();
 
-    logger.info("routeCloudEvent() - Forwarded CloudEvent Data: " + forwardedCloudEvent.getData().get());
+    logger.debug("routeCloudEvent() - Forwarded CloudEvent Data: " + forwardedCloudEvent.getData().get());
 
     if (natsEnabled) {
       natsClient.publish(eventId, forwardedCloudEvent.getData().get().toString());
@@ -117,7 +117,7 @@ public class EventProcessorImpl implements EventProcessor {
 
   private Boolean checkAccess(String workflowId, String token) {
     if (authorizationEnabled) {
-      logger.info("checkAccess() - Token: " + token);
+      logger.debug("checkAccess() - Token: " + token);
       if (token != null) {
         return workflowClient.validateWorkflowToken(workflowId, token);
       } else {
