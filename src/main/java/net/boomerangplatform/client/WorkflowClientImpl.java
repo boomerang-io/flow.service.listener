@@ -39,11 +39,13 @@ public class WorkflowClientImpl implements WorkflowClient {
     final HttpHeaders headers = new HttpHeaders();
     headers.add("Content-Type", "application/cloudevents+json");
 
-    LOGGER.info("executeWorkflowPut() - CloudEvent: " + jsonPayload.getData().get().toPrettyString());
+    LOGGER.info("executeWorkflowPut() - CloudEvent Attributes: " + jsonPayload.getAttributes().toString());
+    LOGGER.info("executeWorkflowPut() - CloudEvent Data: " + jsonPayload.getData().get().toPrettyString());
 
-    final HttpEntity<String> req = new HttpEntity<>(jsonPayload.getData().get().toString(), headers);
+    final HttpEntity<CloudEventImpl<JsonNode>> req = new HttpEntity<>(jsonPayload, headers);
 
-    LOGGER.info("executeWorkflowPut() - Request: " + req.toString());
+    LOGGER.info("executeWorkflowPut() - Request Headers: " + req.getHeaders().toString());
+    LOGGER.info("executeWorkflowPut() - Request Body: " + req.getBody().toString());
 
     ResponseEntity<String> responseEntity = restTemplate.exchange(executeWorkflowUrl, HttpMethod.PUT, req,
         String.class);
