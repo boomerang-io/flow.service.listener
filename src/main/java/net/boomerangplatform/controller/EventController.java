@@ -40,9 +40,10 @@ public class EventController {
    * <h4>Specifications</h4>
    * <ul>
    * <li><a href=
-   * "https://github.com/cloudevents/spec/blob/master/http-webhook.md">CloudEvents</a>
-   * <li><a href="https://docs.docker.com/docker-hub/webhooks/">Dockerhub</a>
-   * <li><a href="https://api.slack.com/events-api">Slack</a>
+   * "https://github.com/cloudevents/spec/blob/master/http-webhook.md">CloudEvents</a></li>
+   * <li><a href="https://docs.docker.com/docker-hub/webhooks/">Dockerhub</a></li>
+   * <li><a href="https://api.slack.com/events-api">Slack Events API</a></li>
+   * <li><a href="https://api.slack.com/events">Slack Events</a></li>
    * </ul>
    * 
    * <h4>Sample</h4>
@@ -62,7 +63,7 @@ public class EventController {
             && jsonPayload.getChallenge() != null) {
           response.setChallenge(jsonPayload.getChallenge());
           return ResponseEntity.ok(response);
-        } else if (payload != null && "event_callback".equals(payload.path("type").asText())) {
+        } else if (payload != null && ("shortcut".equals(jsonPayload.getType()) || "event_callback".equals(payload.path("type").asText()))) {
           eventProcessor.routeWebhookEvent(token, request.getRequestURL().toString(), "slack", workflowId, payload,
               null, null, STATUS_SUCCESS);
           return ResponseEntity.ok(HttpStatus.NO_CONTENT);
