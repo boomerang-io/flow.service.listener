@@ -58,22 +58,28 @@ public class EventController {
 
     switch (type) {
       case slack:
-        SlackEventPayload response = new SlackEventPayload();
-        ObjectMapper mapper = new ObjectMapper();
-        SlackEventPayload jsonPayload = mapper.convertValue(payload, SlackEventPayload.class);
-
-        if (jsonPayload != null && "url_verification".equals(jsonPayload.getType())
-            && jsonPayload.getChallenge() != null) {
-          response.setChallenge(jsonPayload.getChallenge());
-          return ResponseEntity.ok(response);
-        } else if (payload != null && ("shortcut".equals(payload.get("type").asText()) || "event_callback".equals(payload.path("type").asText()))) {
-          // Handle Slack Events
-          eventProcessor.routeWebhookEvent(token, request.getRequestURL().toString(), "slack", workflowId, payload,
-              null, null, STATUS_SUCCESS);
-          return ResponseEntity.ok(HttpStatus.OK);
+        if (payload != null) {
+          final String slackType = payload.get("type").asText();
+  
+          if ("url_verification".equals(slackType)) {
+            SlackEventPayload response = new SlackEventPayload();
+            final String slackChallenge = payload.get("challenge").asText();
+            if (slackChallenge != null) {
+              response.setChallenge(slackChallenge);
+            }
+            return ResponseEntity.ok(response);
+          } else if (payload != null && ("shortcut".equals(slackType) || "event_callback".equals(slackType))) {
+            // Handle Slack Events
+            eventProcessor.routeWebhookEvent(token, request.getRequestURL().toString(), "slack", workflowId, payload,
+                null, null, STATUS_SUCCESS);
+            return ResponseEntity.ok(HttpStatus.OK);
+          } else {
+            return ResponseEntity.badRequest().build();
+          }
         } else {
           return ResponseEntity.badRequest().build();
         }
+        
       case dockerhub:
         // TODO: dockerhub callback_url validation
         eventProcessor.routeWebhookEvent(token, request.getRequestURL().toString(), "dockerhub", workflowId, payload,
