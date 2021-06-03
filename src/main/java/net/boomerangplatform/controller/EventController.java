@@ -1,6 +1,8 @@
 package net.boomerangplatform.controller;
 
 import javax.servlet.http.HttpServletRequest;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -16,7 +18,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.cloudevents.CloudEvent;
 import io.cloudevents.v1.AttributesImpl;
 import net.boomerangplatform.attributes.CloudEventAttribute;
@@ -28,6 +29,8 @@ import net.boomerangplatform.service.EventProcessor;
 @RestController
 @RequestMapping("/listener")
 public class EventController {
+
+  private static final Logger logger = LogManager.getLogger(EventController.class);
 
   @Autowired
   private EventProcessor eventProcessor;
@@ -59,6 +62,7 @@ public class EventController {
     switch (type) {
       case slack:
         if (payload != null) {
+          logger.info("Slack Payload Received: " + payload.toString());
           final String slackType = payload.get("type").asText();
   
           if ("url_verification".equals(slackType)) {
