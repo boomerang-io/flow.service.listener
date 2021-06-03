@@ -3,11 +3,14 @@ package net.boomerangplatform.controller;
 import javax.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -63,10 +66,11 @@ public class EventController {
             && jsonPayload.getChallenge() != null) {
           response.setChallenge(jsonPayload.getChallenge());
           return ResponseEntity.ok(response);
-        } else if (payload != null && ("shortcut".equals(jsonPayload.getType()) || "event_callback".equals(payload.path("type").asText()))) {
+        } else if (payload != null && ("shortcut".equals(payload.get("type").asText()) || "event_callback".equals(payload.path("type").asText()))) {
+          // Handle Slack Events
           eventProcessor.routeWebhookEvent(token, request.getRequestURL().toString(), "slack", workflowId, payload,
               null, null, STATUS_SUCCESS);
-          return ResponseEntity.ok(HttpStatus.NO_CONTENT);
+          return ResponseEntity.ok(HttpStatus.OK);
         } else {
           return ResponseEntity.badRequest().build();
         }
@@ -84,6 +88,15 @@ public class EventController {
       default:
         return ResponseEntity.badRequest().build();
     }
+  }
+  
+  @PostMapping(value = "/webhook", consumes = {MediaType.APPLICATION_FORM_URLENCODED_VALUE})
+  public ResponseEntity<?> acceptWebhookEvent(@RequestParam String workflowId,
+      @RequestParam WebhookType type, @TokenAttribute String token, @RequestHeader("x-slack-request-timestamp") String timestamp,
+      @RequestHeader("x-slack-signature") String signature,
+      @RequestParam MultiValueMap<String, String> slackEvent) {
+
+      return ResponseEntity.ok(HttpStatus.UNAUTHORIZED);
   }
 
   /**
