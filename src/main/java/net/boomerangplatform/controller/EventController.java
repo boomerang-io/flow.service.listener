@@ -1,5 +1,6 @@
 package net.boomerangplatform.controller;
 
+import java.nio.charset.StandardCharsets;
 import javax.servlet.http.HttpServletRequest;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -17,7 +18,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.cloudevents.CloudEvent;
 import io.cloudevents.v1.AttributesImpl;
 import net.boomerangplatform.attributes.CloudEventAttribute;
@@ -38,7 +42,7 @@ public class EventController {
   private static String STATUS_SUCCESS = "success";
 
   /**
-   * HTTP Webhook accepting Generic, Slack, and Dockerhub subtypes. For Slack and
+   * HTTP Webhook accepting Generic, Slack Events, and Dockerhub subtypes. For Slack and
    * Dockerhub will respond/perform verification challenges.
    * <p>
    * <b>Note:</b> Only partially conformant to the specification.
@@ -58,11 +62,9 @@ public class EventController {
   @PostMapping(value = "/webhook", consumes = "application/json; charset=utf-8")
   public ResponseEntity<?> acceptWebhookEvent(HttpServletRequest request, @RequestParam String workflowId,
       @RequestParam WebhookType type, @RequestBody JsonNode payload, @TokenAttribute String token) {
-
     switch (type) {
       case slack:
         if (payload != null) {
-          logger.info("Slack Payload Received: " + payload.toString());
           final String slackType = payload.get("type").asText();
   
           if ("url_verification".equals(slackType)) {
@@ -100,13 +102,38 @@ public class EventController {
     }
   }
   
+  /**
+   * HTTP Webhook accepting Slack Slash and Interactive Commands
+   * 
+   * <h4>Specifications</h4>
+   * <ul>
+   * <li><a href="https://api.slack.com/interactivity/handling">Slack Interactivity Handling</a></li>
+   * </ul>
+   * 
+   * <h4>Sample</h4>
+   * <code>/webhook?workflowId={workflowId}&type=slack&access_token={access_token}</code>
+   * @throws JsonProcessingException 
+   * @throws JsonMappingException 
+   */
   @PostMapping(value = "/webhook", consumes = {MediaType.APPLICATION_FORM_URLENCODED_VALUE})
-  public ResponseEntity<?> acceptWebhookEvent(@RequestParam String workflowId,
+  public ResponseEntity<?> acceptWebhookEvent(HttpServletRequest request, @RequestParam String workflowId,
       @RequestParam WebhookType type, @TokenAttribute String token, @RequestHeader("x-slack-request-timestamp") String timestamp,
       @RequestHeader("x-slack-signature") String signature,
-      @RequestParam MultiValueMap<String, String> slackEvent) {
+      @RequestParam MultiValueMap<String, String> slackEvent) throws JsonMappingException, JsonProcessingException {
 
-      return ResponseEntity.ok(HttpStatus.UNAUTHORIZED);
+    if (slackEvent.containsKey("payload")) {
+      String encodedpayload = slackEvent.get("payload").get(0);
+      String decodedPayload = encodedpayload != null ? java.net.URLDecoder.decode(encodedpayload, StandardCharsets.UTF_8) : "";
+
+      ObjectMapper mapper = new ObjectMapper();
+      JsonNode payload = mapper.readTree(decodedPayload);
+      eventProcessor.routeWebhookEvent(token, request.getRequestURL().toString(), "slack", workflowId, payload,
+          null, null, STATUS_SUCCESS);
+      return ResponseEntity.ok(HttpStatus.OK);
+    } else if (slackEvent.containsKey("command")) {
+      
+    }
+    return ResponseEntity.ok(HttpStatus.UNAUTHORIZED);
   }
 
   /**
