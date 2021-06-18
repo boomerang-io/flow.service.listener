@@ -1,24 +1,25 @@
 package net.boomerangplatform.tests;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.springframework.test.web.client.ExpectedCount.manyTimes;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.jupiter.api.BeforeAll;
-import org.mockito.InjectMocks;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -28,14 +29,12 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import net.boomerangplatform.controller.EventController;
 
 @ActiveProfiles("local")
-@WebMvcTest
 @AutoConfigureMockMvc
 @SpringBootTest
-//@ExtendWith(SpringExtension.class)
-public class EventControllerTests {
+@ExtendWith(SpringExtension.class)
+class EventControllerTests {
 
   @Value("${workflow.service.url.execute}")
   private String executeWorkflowUrl;
@@ -52,12 +51,9 @@ public class EventControllerTests {
   @Autowired
   private MockMvc mockMvc;
   
-  @InjectMocks
-  EventController eventController;
-  
   private String workflowId = "60b5d4a91817f67ac3c44bd1";
   
-  @BeforeAll
+  @BeforeEach
   public void init() {
      this.server = MockRestServiceServer.createServer(restTemplate);
     server = MockRestServiceServer.bindTo(restTemplate).ignoreExpectOrder(true).build();
@@ -100,7 +96,7 @@ public class EventControllerTests {
     String decodedPayload = encodedpayload != null ? java.net.URLDecoder.decode(encodedpayload, StandardCharsets.UTF_8) : "";
     String decodedPayloadAsJson = TestUtil.getMockFile("json/slack-shortcut-decoded.json");
     
-    Assert.assertEquals(decodedPayload, decodedPayloadAsJson);
+    assertEquals(decodedPayload, decodedPayloadAsJson);
     
     ObjectMapper mapper = new ObjectMapper();
     JsonNode payload = mapper.readTree(decodedPayload);
@@ -122,15 +118,15 @@ public class EventControllerTests {
       
       System.out.println("testSlackShortcutType() - Response: " + result.getResponse().getContentAsString());
       
-      Assert.assertEquals(result.getResponse().getStatus(), 200);
+      assertEquals(result.getResponse().getStatus(), 200);
     } catch (Exception e) {
       e.printStackTrace();
-      Assert.fail("Unexpected Exception");
+      fail("Unexpected Exception");
     }
   }
   
   @Test
-  public void testSlackInvalidType() throws IOException {
+  void testSlackInvalidType() throws IOException {
     
     String payloadAsString = TestUtil.getMockFile("json/slack-invalidtype-payload.json");
     ObjectMapper mapper = new ObjectMapper();
@@ -146,10 +142,10 @@ public class EventControllerTests {
       
       System.out.println("testSlackInvalidType() - Status: " + result.getResponse().getStatus());
       
-      Assert.assertEquals(result.getResponse().getStatus(), 400);
+      assertEquals(result.getResponse().getStatus(), 400);
     } catch (Exception e) {
       e.printStackTrace();
-      Assert.fail("Unexpected Exception");
+      fail("Unexpected Exception");
     }
   }
   
