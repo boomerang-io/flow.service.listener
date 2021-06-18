@@ -1,14 +1,19 @@
 package net.boomerangplatform.tests;
 
-import org.junit.Before;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.RestTemplate;
 
 @SpringBootTest
-public class EventServiceTests {
+@ExtendWith(SpringExtension.class)
+class EventServiceTests {
 
   @Value("${workflow.service.url.execute}")
   private String executeWorkflowUrl;
@@ -17,13 +22,19 @@ public class EventServiceTests {
   private String validateTokenWorkflowUrl;
 
   @Autowired
+  @Qualifier("internalRestTemplate")
   RestTemplate restTemplate;
 
   private MockRestServiceServer server;
-  
-  @Before
+
+  @BeforeEach
   public void init() {
-     this.server = MockRestServiceServer.createServer(restTemplate);
+    this.server = MockRestServiceServer.createServer(restTemplate);
+  }
+
+  @Test
+  void test() {
+
   }
 
 
