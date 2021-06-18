@@ -9,17 +9,16 @@ import java.nio.charset.StandardCharsets;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -31,10 +30,11 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import net.boomerangplatform.controller.EventController;
 
-@AutoConfigureMockMvc
 @ActiveProfiles("local")
+@WebMvcTest
+@AutoConfigureMockMvc
 @SpringBootTest
-@ExtendWith(SpringExtension.class)
+//@ExtendWith(SpringExtension.class)
 public class EventControllerTests {
 
   @Value("${workflow.service.url.execute}")
@@ -111,7 +111,8 @@ public class EventControllerTests {
     payloadMap.add("payload", encodedpayload);
 
     try {
-        MvcResult result = mockMvc.perform(MockMvcRequestBuilders.post("/listener/webhook")
+        MvcResult result = mockMvc.perform(
+            MockMvcRequestBuilders.post("/listener/webhook")
           .param("workflowId", workflowId).param("type", "slack")
           .param("access_token", "A26ABB1F850BA80A625E4A9878795BC17EAD1A8FB8F8232B96003036402F6C66")
           .header("x-slack-signature", "v0=435cb53bfc0eaa28ca101609ac1f8cd23abaf603762af18b1883600cf9c2dba8")
