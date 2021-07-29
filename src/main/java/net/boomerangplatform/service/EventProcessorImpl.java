@@ -85,14 +85,6 @@ public class EventProcessorImpl implements EventProcessor {
     String eventId = UUID.randomUUID().toString();
     String eventType = TYPE_PREFIX + "custom";
     String subject = cloudEvent.getAttributes().getSubject().orElse("");
-
-    if (!subject.startsWith("/") || cloudEvent.getData().isEmpty()) {
-      return HttpStatus.BAD_REQUEST;
-    }
-
-    if (!checkAccess(getWorkflowIdFromSubject(subject), token)) {
-      return HttpStatus.FORBIDDEN;
-    }
     
     String status = "success";
     if (cloudEvent.getExtensions() != null && cloudEvent.getExtensions().containsKey("status")) {
@@ -115,6 +107,21 @@ public class EventProcessorImpl implements EventProcessor {
       workflowClient.executeWorkflowPut(forwardedCloudEvent);
     }
 
+    return HttpStatus.OK;
+  }
+  
+  @Override
+  public HttpStatus validateCloudEvent(CloudEvent<AttributesImpl, JsonNode> cloudEvent, String token, URI uri) {
+    String subject = cloudEvent.getAttributes().getSubject().orElse("");
+
+    if (!subject.startsWith("/") || cloudEvent.getData().isEmpty()) {
+      return HttpStatus.BAD_REQUEST;
+    }
+
+    if (!checkAccess(getWorkflowIdFromSubject(subject), token)) {
+      return HttpStatus.FORBIDDEN;
+    }
+    
     return HttpStatus.OK;
   }
 

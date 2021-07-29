@@ -56,6 +56,7 @@ public class WorkflowClientImpl implements WorkflowClient {
 
       ValidateTokenRequest payload = new ValidateTokenRequest();
       payload.setToken(token);
+      LOGGER.info(validateTokenWorkflowUrl.replace("{workflowId}", workflowId));
 
       final HttpEntity<ValidateTokenRequest> req = new HttpEntity<>(payload, headers);
       ResponseEntity<String> responseEntity =
