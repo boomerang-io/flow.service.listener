@@ -129,7 +129,12 @@ public class EventProcessorImpl implements EventProcessor {
     if (authorizationEnabled) {
       logger.debug("checkAccess() - Token: " + token);
       if (token != null) {
-        return workflowClient.validateWorkflowToken(workflowId, token);
+        HttpStatus status = workflowClient.validateWorkflowToken(workflowId, token);
+        if (status == HttpStatus.OK) {
+          return true;
+        } else {
+          return false;
+        }
       } else {
         logger.error("checkAccess() - Error: no token provided.");
         return false;

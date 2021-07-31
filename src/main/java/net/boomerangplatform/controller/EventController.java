@@ -2,8 +2,6 @@ package net.boomerangplatform.controller;
 
 import java.nio.charset.StandardCharsets;
 import javax.servlet.http.HttpServletRequest;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -34,7 +32,7 @@ import net.boomerangplatform.service.EventProcessor;
 @RequestMapping("/listener")
 public class EventController {
 
-  private static final Logger logger = LogManager.getLogger(EventController.class);
+//  private static final Logger LOGGER = LogManager.getLogger(EventController.class);
 
   @Autowired
   private EventProcessor eventProcessor;
