@@ -85,14 +85,6 @@ public class EventProcessorImpl implements EventProcessor {
     String eventId = UUID.randomUUID().toString();
     String eventType = TYPE_PREFIX + "custom";
     String subject = cloudEvent.getAttributes().getSubject().orElse("");
-
-    if (!subject.startsWith("/") || cloudEvent.getData().isEmpty()) {
-      return HttpStatus.BAD_REQUEST;
-    }
-
-    if (!checkAccess(getWorkflowIdFromSubject(subject), token)) {
-      return HttpStatus.FORBIDDEN;
-    }
     
     String status = "success";
     if (cloudEvent.getExtensions() != null && cloudEvent.getExtensions().containsKey("status")) {
@@ -117,12 +109,32 @@ public class EventProcessorImpl implements EventProcessor {
 
     return HttpStatus.OK;
   }
+  
+  @Override
+  public HttpStatus validateCloudEvent(CloudEvent<AttributesImpl, JsonNode> cloudEvent, String token, URI uri) {
+    String subject = cloudEvent.getAttributes().getSubject().orElse("");
+
+    if (!subject.startsWith("/") || cloudEvent.getData().isEmpty()) {
+      return HttpStatus.BAD_REQUEST;
+    }
+
+    if (!checkAccess(getWorkflowIdFromSubject(subject), token)) {
+      return HttpStatus.FORBIDDEN;
+    }
+    
+    return HttpStatus.OK;
+  }
 
   private Boolean checkAccess(String workflowId, String token) {
     if (authorizationEnabled) {
       logger.debug("checkAccess() - Token: " + token);
       if (token != null) {
-        return workflowClient.validateWorkflowToken(workflowId, token);
+        HttpStatus status = workflowClient.validateWorkflowToken(workflowId, token);
+        if (status == HttpStatus.OK) {
+          return true;
+        } else {
+          return false;
+        }
       } else {
         logger.error("checkAccess() - Error: no token provided.");
         return false;

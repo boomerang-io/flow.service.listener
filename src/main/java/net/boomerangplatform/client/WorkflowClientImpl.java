@@ -11,6 +11,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.cloudevents.v1.CloudEventImpl;
@@ -49,24 +50,33 @@ public class WorkflowClientImpl implements WorkflowClient {
   }
 
   @Override
-  public Boolean validateWorkflowToken(String workflowId, String token) {
+  public HttpStatus validateWorkflowToken(String workflowId, String token) {
     if (token != null && !token.isBlank()) {
       final HttpHeaders headers = new HttpHeaders();
       headers.add("Content-Type", "application/json");
 
       ValidateTokenRequest payload = new ValidateTokenRequest();
       payload.setToken(token);
+      LOGGER.debug("validateWorkflowToken() - URL: " + validateTokenWorkflowUrl.replace("{workflowId}", workflowId));
 
       final HttpEntity<ValidateTokenRequest> req = new HttpEntity<>(payload, headers);
-      ResponseEntity<String> responseEntity =
-          restTemplate.exchange(validateTokenWorkflowUrl.replace("{workflowId}", workflowId),
-              HttpMethod.POST, req, String.class);
-
-      LOGGER.debug("validateWorkflowToken() - Status Code: " + responseEntity.getStatusCode());
-
-      return HttpStatus.OK.equals(responseEntity.getStatusCode());
+      try {
+        ResponseEntity<String> responseEntity =
+            restTemplate.exchange(validateTokenWorkflowUrl.replace("{workflowId}", workflowId),
+                HttpMethod.POST, req, String.class);
+  
+        LOGGER.debug("validateWorkflowToken() - Status Code: " + responseEntity.getStatusCode());
+        LOGGER.debug("validateWorkflowToken() - Body: " + responseEntity.getBody().toString());
+  
+        return responseEntity.getStatusCode();
+      } catch (HttpClientErrorException e) {
+        LOGGER.error("validateWorkflowToken() - Status Code: " + e.getStatusCode());
+        return e.getStatusCode();
+      } catch (Exception e) {
+        throw e;
+      }
     }
-    return HttpStatus.OK.equals(HttpStatus.BAD_REQUEST);
+    return HttpStatus.BAD_REQUEST;
   }
 
 // @formatter:off

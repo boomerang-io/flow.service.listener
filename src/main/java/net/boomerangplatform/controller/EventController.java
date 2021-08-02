@@ -2,8 +2,6 @@ package net.boomerangplatform.controller;
 
 import java.nio.charset.StandardCharsets;
 import javax.servlet.http.HttpServletRequest;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -34,7 +32,7 @@ import net.boomerangplatform.service.EventProcessor;
 @RequestMapping("/listener")
 public class EventController {
 
-  private static final Logger logger = LogManager.getLogger(EventController.class);
+//  private static final Logger LOGGER = LogManager.getLogger(EventController.class);
 
   @Autowired
   private EventProcessor eventProcessor;
@@ -170,8 +168,12 @@ public class EventController {
   @PutMapping(value = "/event", consumes = "application/cloudevents+json; charset=utf-8")
   public ResponseEntity<HttpStatus> acceptEvent(@CloudEventAttribute CloudEvent<AttributesImpl, JsonNode> cloudEvent,
       @TokenAttribute String token) {
-    eventProcessor.routeCloudEvent(cloudEvent, token,
+    HttpStatus status = eventProcessor.validateCloudEvent(cloudEvent, token,
         ServletUriComponentsBuilder.fromCurrentRequestUri().build().toUri());
-    return ResponseEntity.ok(HttpStatus.OK);
+    if (status == HttpStatus.OK) {
+      eventProcessor.routeCloudEvent(cloudEvent, token,
+        ServletUriComponentsBuilder.fromCurrentRequestUri().build().toUri());
+    }
+    return ResponseEntity.status(status).build();
   }
 }

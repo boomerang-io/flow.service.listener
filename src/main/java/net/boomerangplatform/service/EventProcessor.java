@@ -15,4 +15,7 @@ public interface EventProcessor {
 
   HttpStatus routeWebhookEvent(String token, String requestUri, String trigger, String workflowId,
       JsonNode payload, String workflowActivityId, String topic, String status);
+
+  HttpStatus validateCloudEvent(CloudEvent<AttributesImpl, JsonNode> cloudEvent, String token,
+      URI uri);
 }

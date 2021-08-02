@@ -41,7 +41,7 @@ public class TokenAttributeArgumentResolver implements HandlerMethodArgumentReso
       return Arrays.asList(tokenHeaderValue.split(" ", 2)).stream().reduce((first, last) -> last).orElse("");
     }
 
-    // Extract token from URL parameters if possbile
+    // Extract token from URL parameters if possible
     if (tokenUrlParamValue != null) {
       return tokenUrlParamValue;
     }

@@ -7,6 +7,7 @@ import static org.springframework.test.web.client.match.MockRestRequestMatchers.
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -34,7 +35,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @AutoConfigureMockMvc
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
-class EventControllerTests {
+class EventControllerSlackTests {
 
   @Value("${workflow.service.url.execute}")
   private String executeWorkflowUrl;
@@ -141,6 +142,43 @@ class EventControllerTests {
           .content(payloadAsString).contentType(MediaType.APPLICATION_JSON)).andReturn();
       
       System.out.println("testSlackInvalidType() - Status: " + result.getResponse().getStatus());
+      
+      assertEquals(result.getResponse().getStatus(), 400);
+    } catch (Exception e) {
+      e.printStackTrace();
+      fail("Unexpected Exception");
+    }
+  }
+  
+  @Test
+  void testEventUnauthorized() throws IOException, URISyntaxException {
+    
+//    String eventId = UUID.randomUUID().toString();
+//    String eventType = "io.boomerang.eventing.custom";
+//    URI uri = new URI("/internal");
+//    String subject = "/5f74d0293979cd04c7f8afa1";
+//    CustomAttributeExtension statusCAE = new CustomAttributeExtension("status", "success");
+    String content = "{" //
+        + "\"id\":\"1234\"," //
+        + "\"specversion\":\"1.0\"," //
+        + "\"type\":\"io.boomerang.eventing.custom\"," //
+        + "\"subject\":\"/5f74d0293979cd04c7f8afa1\"," //
+        + "\"source\":\"/internal\"," //
+        + "\"data\":{\"value\":\"test\"}}";
+    
+//    final CloudEventImpl<JsonNode> forwardedCloudEvent = CloudEventBuilder.<JsonNode>builder().withType(eventType).withExtension(statusCAE)
+//        .withId(eventId).withSource(uri).withSubject(subject)
+//        .withTime(ZonedDateTime.now()).build();
+    
+    System.out.println("testEventUnauthorized() - Request Payload: " + content);
+
+    try {
+      MvcResult result = mockMvc.perform(MockMvcRequestBuilders.put("/listener/event")
+          .header("Authorization", "shouldnotwork")
+          .header("Content-Type", "application/cloudevents+json")
+          .content(content)).andReturn();
+      
+      System.out.println("testEventUnauthorized() - Status: " + result.getResponse().getStatus());
       
       assertEquals(result.getResponse().getStatus(), 400);
     } catch (Exception e) {
