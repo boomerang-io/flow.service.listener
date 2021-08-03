@@ -1,4 +1,4 @@
-package net.boomerangplatform.client;
+package io.boomerang.client;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;

@@ -1,4 +1,4 @@
-package net.boomerangplatform.model;
+package io.boomerang.model;
 
 import java.util.HashMap;
 import java.util.Map;

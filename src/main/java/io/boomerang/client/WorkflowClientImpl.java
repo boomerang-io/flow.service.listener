@@ -1,4 +1,4 @@
-package net.boomerangplatform.client;
+package io.boomerang.client;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -15,8 +15,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import com.fasterxml.jackson.databind.JsonNode;
+import io.boomerang.model.ValidateTokenRequest;
 import io.cloudevents.v1.CloudEventImpl;
-import net.boomerangplatform.model.ValidateTokenRequest;
 
 @Service
 public class WorkflowClientImpl implements WorkflowClient {

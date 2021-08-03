@@ -1,4 +1,4 @@
-package net.boomerangplatform.attributes;
+package io.boomerang.attributes;
 
 import java.util.Arrays;
 

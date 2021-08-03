@@ -1,4 +1,4 @@
-package net.boomerangplatform.controller;
+package io.boomerang.controller;
 
 import java.nio.charset.StandardCharsets;
 import javax.servlet.http.HttpServletRequest;
@@ -20,13 +20,13 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.boomerang.attributes.CloudEventAttribute;
+import io.boomerang.attributes.TokenAttribute;
+import io.boomerang.model.SlackEventPayload;
+import io.boomerang.model.WebhookType;
+import io.boomerang.service.EventProcessor;
 import io.cloudevents.CloudEvent;
 import io.cloudevents.v1.AttributesImpl;
-import net.boomerangplatform.attributes.CloudEventAttribute;
-import net.boomerangplatform.attributes.TokenAttribute;
-import net.boomerangplatform.model.SlackEventPayload;
-import net.boomerangplatform.model.WebhookType;
-import net.boomerangplatform.service.EventProcessor;
 
 @RestController
 @RequestMapping("/listener")

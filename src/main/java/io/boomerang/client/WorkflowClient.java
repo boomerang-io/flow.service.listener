@@ -1,4 +1,4 @@
-package net.boomerangplatform.client;
+package io.boomerang.client;
 
 import org.springframework.http.HttpStatus;
 import com.fasterxml.jackson.databind.JsonNode;

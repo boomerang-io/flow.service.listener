@@ -1,4 +1,4 @@
-package net.boomerangplatform.service;
+package io.boomerang.service;
 
 import java.net.URI;
 import java.time.ZonedDateTime;
@@ -11,14 +11,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.databind.JsonNode;
+import io.boomerang.client.NatsClient;
+import io.boomerang.client.WorkflowClient;
+import io.boomerang.model.CustomAttributeExtension;
 import io.cloudevents.CloudEvent;
 import io.cloudevents.json.Json;
 import io.cloudevents.v1.AttributesImpl;
 import io.cloudevents.v1.CloudEventBuilder;
 import io.cloudevents.v1.CloudEventImpl;
-import net.boomerangplatform.client.NatsClient;
-import net.boomerangplatform.client.WorkflowClient;
-import net.boomerangplatform.model.CustomAttributeExtension;
 
 @Service
 public class EventProcessorImpl implements EventProcessor {
