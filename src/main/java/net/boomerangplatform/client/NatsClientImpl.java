@@ -6,6 +6,7 @@ import java.util.concurrent.TimeoutException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import io.nats.client.ConnectionListener;
 import io.nats.streaming.AckHandler;
@@ -32,6 +33,7 @@ public class NatsClientImpl implements NatsClient {
   static private String CLIENT_ID_PREFIX = "flow-listener-";
 
   @Override
+  @Async
   /*
    * Publishes CloudEvent payload to NATS
    * 

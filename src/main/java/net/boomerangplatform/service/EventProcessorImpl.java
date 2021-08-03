@@ -8,7 +8,7 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
-import org.springframework.scheduling.annotation.Async;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.cloudevents.CloudEvent;
@@ -40,7 +40,6 @@ public class EventProcessorImpl implements EventProcessor {
   private WorkflowClient workflowClient;
 
   @Override
-  @Async
   public HttpStatus routeWebhookEvent(String token, String requestUri, String trigger, String workflowId,
       JsonNode payload, String workflowActivityId, String topic, String status) {
     final String eventId = UUID.randomUUID().toString();
@@ -76,11 +75,10 @@ public class EventProcessorImpl implements EventProcessor {
   }
 
   @Override
-  @Async
-  public HttpStatus routeCloudEvent(CloudEvent<AttributesImpl, JsonNode> cloudEvent, String token, URI uri) {
+  public ResponseEntity<CloudEvent<AttributesImpl, JsonNode>> routeCloudEvent(CloudEvent<AttributesImpl, JsonNode> cloudEvent, String token, URI uri) {
 
-    logger.info("routeCloudEvent() - Received CloudEvent Attributes: " + cloudEvent.getAttributes());
-    logger.info("routeCloudEvent() - Received CloudEvent Data: " + cloudEvent.getData().get());
+    logger.debug("routeCloudEvent() - Received CloudEvent Attributes: " + cloudEvent.getAttributes());
+    logger.debug("routeCloudEvent() - Received CloudEvent Data: " + cloudEvent.getData().get());
 
     String eventId = UUID.randomUUID().toString();
     String eventType = TYPE_PREFIX + "custom";
@@ -99,15 +97,13 @@ public class EventProcessorImpl implements EventProcessor {
         .withId(eventId).withSource(uri).withData(cloudEvent.getData().get()).withSubject(subject)
         .withTime(ZonedDateTime.now()).build();
 
-    logger.debug("routeCloudEvent() - Forwarded CloudEvent Data: " + forwardedCloudEvent.getData().get());
-
     if (natsEnabled) {
       natsClient.publish(eventId, forwardedCloudEvent.getData().get().toString());
     } else {
       workflowClient.executeWorkflowPut(forwardedCloudEvent);
     }
 
-    return HttpStatus.OK;
+    return ResponseEntity.ok().body(forwardedCloudEvent);
   }
   
   @Override

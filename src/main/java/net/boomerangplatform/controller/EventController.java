@@ -166,12 +166,12 @@ public class EventController {
    * @see https://github.com/cloudevents/spec/blob/v1.0/http-protocol-binding.md
    */
   @PutMapping(value = "/event", consumes = "application/cloudevents+json; charset=utf-8")
-  public ResponseEntity<HttpStatus> acceptEvent(@CloudEventAttribute CloudEvent<AttributesImpl, JsonNode> cloudEvent,
+  public ResponseEntity<CloudEvent<AttributesImpl, JsonNode>> acceptEvent(@CloudEventAttribute CloudEvent<AttributesImpl, JsonNode> cloudEvent,
       @TokenAttribute String token) {
     HttpStatus status = eventProcessor.validateCloudEvent(cloudEvent, token,
         ServletUriComponentsBuilder.fromCurrentRequestUri().build().toUri());
     if (status == HttpStatus.OK) {
-      eventProcessor.routeCloudEvent(cloudEvent, token,
+      return eventProcessor.routeCloudEvent(cloudEvent, token,
         ServletUriComponentsBuilder.fromCurrentRequestUri().build().toUri());
     }
     return ResponseEntity.status(status).build();
