@@ -1,4 +1,4 @@
-package net.boomerangplatform.tests;
+package io.boomerang.tests;
 
 import java.io.File;
 import java.io.IOException;

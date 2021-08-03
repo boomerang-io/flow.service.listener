@@ -7,7 +7,7 @@
 		<version>2.4.3</version>
 	</parent>
 
-	<groupId>net.boomerangplatform</groupId>
+	<groupId>io.boomerang</groupId>
 	<artifactId>service-listener</artifactId>
 	<version>${version.name}</version>
 	<packaging>jar</packaging>

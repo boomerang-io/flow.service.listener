@@ -1,4 +1,4 @@
-package net.boomerangplatform.tests;
+package io.boomerang.tests;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;

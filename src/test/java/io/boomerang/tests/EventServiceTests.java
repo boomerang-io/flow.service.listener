@@ -1,4 +1,4 @@
-package net.boomerangplatform.tests;
+package io.boomerang.tests;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
