@@ -59,7 +59,7 @@ public class EventController {
    */
   @PostMapping(value = "/webhook", consumes = "application/json; charset=utf-8")
   public ResponseEntity<?> acceptWebhookEvent(HttpServletRequest request, @RequestParam String workflowId,
-      @RequestParam WebhookType type, @RequestBody JsonNode payload, @TokenAttribute String token) {
+      @RequestParam WebhookType type, @RequestBody JsonNode payload, @TokenAttribute String token) {    
     switch (type) {
       case slack:
         if (payload != null) {
@@ -74,9 +74,8 @@ public class EventController {
             return ResponseEntity.ok(response);
           } else if (payload != null && ("shortcut".equals(slackType) || "event_callback".equals(slackType))) {
             // Handle Slack Events
-            eventProcessor.routeWebhookEvent(token, request.getRequestURL().toString(), "slack", workflowId, payload,
+            return eventProcessor.routeWebhookEvent(token, request.getRequestURL().toString(), "slack", workflowId, payload,
                 null, null, STATUS_SUCCESS);
-            return ResponseEntity.ok(HttpStatus.OK);
           } else {
             return ResponseEntity.badRequest().build();
           }
@@ -86,14 +85,12 @@ public class EventController {
         
       case dockerhub:
         // TODO: dockerhub callback_url validation
-        eventProcessor.routeWebhookEvent(token, request.getRequestURL().toString(), "dockerhub", workflowId, payload,
+        return eventProcessor.routeWebhookEvent(token, request.getRequestURL().toString(), "dockerhub", workflowId, payload,
             null, null, STATUS_SUCCESS);
-        return ResponseEntity.ok(HttpStatus.OK);
 
       case generic:
-        eventProcessor.routeWebhookEvent(token, request.getRequestURL().toString(), "webhook", workflowId, payload,
+        return eventProcessor.routeWebhookEvent(token, request.getRequestURL().toString(), "webhook", workflowId, payload,
             null, null, STATUS_SUCCESS);
-        return ResponseEntity.ok(HttpStatus.OK);
 
       default:
         return ResponseEntity.badRequest().build();
@@ -135,7 +132,7 @@ public class EventController {
   }
 
   /**
-   * HTTP Webhook specifically for the "Wait For Event" workflow task.
+   * HTTP POST Webhook specifically for the "Wait For Event" workflow task.
    * 
    * <h4>Sample</h4>
    * <code>/webhook/wfe?workflowId={workflowId}&access_token={access_token}&topic={topic}&workflowActivityId={workflowActivityId}</code>
@@ -144,18 +141,24 @@ public class EventController {
   public ResponseEntity<?> acceptWaitForEvent(HttpServletRequest request, @RequestParam String workflowId,
       @RequestParam String workflowActivityId, @RequestParam String topic, @RequestParam(defaultValue = "success") String status,
       @RequestBody JsonNode payload, @TokenAttribute String token) {
-    eventProcessor.routeWebhookEvent(token, request.getRequestURL().toString(), "wfe", workflowId, payload,
-        workflowActivityId, topic, status);
-    return ResponseEntity.ok(HttpStatus.OK);
+      return eventProcessor.routeWebhookEvent(token, request.getRequestURL().toString(), "wfe", workflowId, payload,
+              workflowActivityId, topic, status);
   }
   
+  /**
+   * HTTP GET Webhook specifically for the "Wait For Event" workflow task.
+   * 
+   * Typically you would use the POST, however this can be useful to trigger from an email to continue or similar.
+   * 
+   * <h4>Sample</h4>
+   * <code>/webhook/wfe?workflowId={workflowId}&access_token={access_token}&topic={topic}&workflowActivityId={workflowActivityId}</code>
+   */  
   @GetMapping(value = "/webhook/wfe")
   public ResponseEntity<?> acceptWaitForEvent(HttpServletRequest request, @RequestParam String workflowId,
       @RequestParam String workflowActivityId, @RequestParam String topic, @RequestParam(defaultValue = "success") String status,
       @TokenAttribute String token) {
-    eventProcessor.routeWebhookEvent(token, request.getRequestURL().toString(), "wfe", workflowId, null,
-        workflowActivityId, topic, status);
-    return ResponseEntity.ok(HttpStatus.OK);
+      return eventProcessor.routeWebhookEvent(token, request.getRequestURL().toString(), "wfe", workflowId, null,
+          workflowActivityId, topic, status);
   }
 
   /**
@@ -166,14 +169,9 @@ public class EventController {
    * @see https://github.com/cloudevents/spec/blob/v1.0/http-protocol-binding.md
    */
   @PutMapping(value = "/event", consumes = "application/cloudevents+json; charset=utf-8")
-  public ResponseEntity<CloudEvent<AttributesImpl, JsonNode>> acceptEvent(@CloudEventAttribute CloudEvent<AttributesImpl, JsonNode> cloudEvent,
+  public ResponseEntity<?> acceptEvent(@CloudEventAttribute CloudEvent<AttributesImpl, JsonNode> cloudEvent,
       @TokenAttribute String token) {
-    HttpStatus status = eventProcessor.validateCloudEvent(cloudEvent, token,
+    return eventProcessor.routeCloudEvent(cloudEvent, token,
         ServletUriComponentsBuilder.fromCurrentRequestUri().build().toUri());
-    if (status == HttpStatus.OK) {
-      return eventProcessor.routeCloudEvent(cloudEvent, token,
-        ServletUriComponentsBuilder.fromCurrentRequestUri().build().toUri());
-    }
-    return ResponseEntity.status(status).build();
   }
 }

@@ -40,18 +40,25 @@ public class EventProcessorImpl implements EventProcessor {
   private WorkflowClient workflowClient;
 
   @Override
-  public HttpStatus routeWebhookEvent(String token, String requestUri, String trigger, String workflowId,
+  public ResponseEntity<CloudEvent<AttributesImpl, JsonNode>>  routeWebhookEvent(String token, String requestUri, String trigger, String workflowId,
       JsonNode payload, String workflowActivityId, String topic, String status) {
+    //Validate Token and WorkflowID. Do first.
+    HttpStatus accessStatus = checkAccess(workflowId, token);
+    if (accessStatus != HttpStatus.OK) {
+      return ResponseEntity.status(accessStatus).build();
+    }
+    
     final String eventId = UUID.randomUUID().toString();
     final String eventType = TYPE_PREFIX + trigger;
     final URI uri = URI.create(requestUri);
     String subject = "/" + workflowId;
+    
+    //Validate WFE Attributes
     if ("wfe".equals(trigger) && workflowActivityId != null) {
       subject = subject + "/" + workflowActivityId + "/" + topic;
-    }
-
-    if (!checkAccess(workflowId, token)) {
-      return HttpStatus.FORBIDDEN;
+    } else if ("wfe".equals(trigger)) {
+      //WFE requires workflowActivityId
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
     }
     
     if (!"failure".equals(status)) {
@@ -63,7 +70,7 @@ public class EventProcessorImpl implements EventProcessor {
         .withId(eventId).withSource(uri).withData(payload).withSubject(subject).withTime(ZonedDateTime.now()).build();
 
     final String jsonPayload = Json.encode(cloudEvent);
-    logger.debug("CloudEvent Object - " + jsonPayload);
+    logger.debug("routeWebhookEvent() - CloudEvent: " + jsonPayload);
 
     if (natsEnabled) {
       natsClient.publish(eventId, jsonPayload);
@@ -71,18 +78,26 @@ public class EventProcessorImpl implements EventProcessor {
       workflowClient.executeWorkflowPut(cloudEvent);
     }
 
-    return HttpStatus.OK;
+    return ResponseEntity.ok().body(cloudEvent);
   }
 
   @Override
   public ResponseEntity<CloudEvent<AttributesImpl, JsonNode>> routeCloudEvent(CloudEvent<AttributesImpl, JsonNode> cloudEvent, String token, URI uri) {
-
-    logger.debug("routeCloudEvent() - Received CloudEvent Attributes: " + cloudEvent.getAttributes());
-    logger.debug("routeCloudEvent() - Received CloudEvent Data: " + cloudEvent.getData().get());
+    //Validate Token and WorkflowID. Do first.
+    String subject = cloudEvent.getAttributes().getSubject().orElse("");
+    if (!subject.startsWith("/") || cloudEvent.getData().isEmpty()) {
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+    }
+    HttpStatus accessStatus = checkAccess(getWorkflowIdFromSubject(subject), token);
+    if (accessStatus != HttpStatus.OK) {
+      return ResponseEntity.status(accessStatus).build();
+    }
+    
+    logger.debug("routeCloudEvent() - CloudEvent Attributes: " + cloudEvent.getAttributes());
+    logger.debug("routeCloudEvent() - CloudEvent Data: " + cloudEvent.getData().get());
 
     String eventId = UUID.randomUUID().toString();
     String eventType = TYPE_PREFIX + "custom";
-    String subject = cloudEvent.getAttributes().getSubject().orElse("");
     
     String status = "success";
     if (cloudEvent.getExtensions() != null && cloudEvent.getExtensions().containsKey("status")) {
@@ -105,38 +120,18 @@ public class EventProcessorImpl implements EventProcessor {
 
     return ResponseEntity.ok().body(forwardedCloudEvent);
   }
-  
-  @Override
-  public HttpStatus validateCloudEvent(CloudEvent<AttributesImpl, JsonNode> cloudEvent, String token, URI uri) {
-    String subject = cloudEvent.getAttributes().getSubject().orElse("");
 
-    if (!subject.startsWith("/") || cloudEvent.getData().isEmpty()) {
-      return HttpStatus.BAD_REQUEST;
-    }
-
-    if (!checkAccess(getWorkflowIdFromSubject(subject), token)) {
-      return HttpStatus.FORBIDDEN;
-    }
-    
-    return HttpStatus.OK;
-  }
-
-  private Boolean checkAccess(String workflowId, String token) {
+  private HttpStatus checkAccess(String workflowId, String token) {
     if (authorizationEnabled) {
       logger.debug("checkAccess() - Token: " + token);
-      if (token != null) {
-        HttpStatus status = workflowClient.validateWorkflowToken(workflowId, token);
-        if (status == HttpStatus.OK) {
-          return true;
-        } else {
-          return false;
-        }
+      if (token != null && !token.isEmpty() && workflowId!= null&& !workflowId.isEmpty()) {
+        return workflowClient.validateWorkflowToken(workflowId, token);
       } else {
         logger.error("checkAccess() - Error: no token provided.");
-        return false;
+        return HttpStatus.UNAUTHORIZED;
       }
     } else {
-      return true;
+      return HttpStatus.OK;
     }
   }
 
