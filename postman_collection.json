@@ -6,13 +6,20 @@
 	},
 	"item": [
 		{
-			"name": "Webhook - DockerHub",
+			"name": "Webhook - WFE - POST",
 			"request": {
 				"method": "POST",
-				"header": [],
+				"header": [
+					{
+						"key": "Autho",
+						"value": "Bearer AF6ABA5F1C83F7D370B40EC5E20404BB57774D32BD2D61E0655A338721082A75",
+						"type": "text",
+						"disabled": true
+					}
+				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n  \"callback_url\": \"https://registry.hub.docker.com/u/svendowideit/testhook/hook/2141b5bi5i5b02bec211i4eeih0242eg11000a/\",\n  \"push_data\": {\n    \"images\": [\n        \"27d47432a69bca5f2700e4dff7de0388ed65f9d3fb1ec645e2bc24c223dc1cc3\",\n        \"51a9c7c1f8bb2fa19bcd09789a34e63f35abb80044bc10196e304f6634cc582c\",\n        \"...\"\n    ],\n    \"pushed_at\": 1.417566161e+09,\n    \"pusher\": \"trustedbuilder\",\n    \"tag\": \"latest\"\n  },\n  \"repository\": {\n    \"comment_count\": 0,\n    \"date_created\": 1.417494799e+09,\n    \"description\": \"\",\n    \"dockerfile\": \"#\\n# BUILD\\u0009\\u0009docker build -t svendowideit/apt-cacher .\\n# RUN\\u0009\\u0009docker run -d -p 3142:3142 -name apt-cacher-run apt-cacher\\n#\\n# and then you can run containers with:\\n# \\u0009\\u0009docker run -t -i -rm -e http_proxy http://192.168.1.2:3142/ debian bash\\n#\\nFROM\\u0009\\u0009ubuntu\\n\\n\\nVOLUME\\u0009\\u0009[/var/cache/apt-cacher-ng]\\nRUN\\u0009\\u0009apt-get update ; apt-get install -yq apt-cacher-ng\\n\\nEXPOSE \\u0009\\u00093142\\nCMD\\u0009\\u0009chmod 777 /var/cache/apt-cacher-ng ; /etc/init.d/apt-cacher-ng start ; tail -f /var/log/apt-cacher-ng/*\\n\",\n    \"full_description\": \"Docker Hub based automated build from a GitHub repo\",\n    \"is_official\": false,\n    \"is_private\": true,\n    \"is_trusted\": true,\n    \"name\": \"testhook\",\n    \"namespace\": \"svendowideit\",\n    \"owner\": \"svendowideit\",\n    \"repo_name\": \"svendowideit/testhook\",\n    \"repo_url\": \"https://registry.hub.docker.com/u/svendowideit/testhook/\",\n    \"star_count\": 0,\n    \"status\": \"Active\"\n  }\n}",
+					"raw": "{\n  \"name\": \"tyson\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -20,24 +27,43 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:7720/listener/webhook?workflowId=5f74d0293979cd04c7f8afa1?access_token=60588A4632FB5843E10E2A7C0E976B016E7386E068DCB8E335D1E5E42C1478E7&type=dockerhub",
+					"raw": "http://wdc2.cloud.boomerangplatform.net/dev/flow/services/listener/webhook/wfe?workflowId=5f7e2c8969f04975a0fff357&access_token=B12140B3455DB1F54856D891F5F157694B95D7D445BA95BFF2D3201D14F328FA&workflowActivityId=5f80c465b871567a65532c49&topic=foobar",
 					"protocol": "http",
 					"host": [
-						"localhost"
+						"wdc2",
+						"cloud",
+						"boomerangplatform",
+						"net"
 					],
-					"port": "7720",
 					"path": [
+						"dev",
+						"flow",
+						"services",
 						"listener",
-						"webhook"
+						"webhook",
+						"wfe"
 					],
 					"query": [
 						{
 							"key": "workflowId",
-							"value": "5f74d0293979cd04c7f8afa1?access_token=60588A4632FB5843E10E2A7C0E976B016E7386E068DCB8E335D1E5E42C1478E7"
+							"value": "5f7e2c8969f04975a0fff357"
+						},
+						{
+							"key": "access_token",
+							"value": "B12140B3455DB1F54856D891F5F157694B95D7D445BA95BFF2D3201D14F328FA"
 						},
 						{
 							"key": "type",
-							"value": "dockerhub"
+							"value": "dockerhub",
+							"disabled": true
+						},
+						{
+							"key": "workflowActivityId",
+							"value": "5f80c465b871567a65532c49"
+						},
+						{
+							"key": "topic",
+							"value": "foobar"
 						}
 					]
 				}
@@ -59,7 +85,7 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:7720/listener/webhhook?workflowId=5f74d0293979cd04c7f8afa1&type=slack&access_token=60588A4632FB5843E10E2A7C0E976B016E7386E068DCB8E335D1E5E42C1478E7",
+					"raw": "http://localhost:7720/listener/webhook?workflowId=5f74d0293979cd04c7f8afa1&type=slack&access_token=60588A4632FB5843E10E2A7C0E976B016E7386E068DCB8E335D1E5E42C1478E7",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -67,7 +93,7 @@
 					"port": "7720",
 					"path": [
 						"listener",
-						"webhhook"
+						"webhook"
 					],
 					"query": [
 						{
@@ -102,7 +128,7 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:7720/listener/webhhook?workflowId=5f74d0293979cd04c7f8afa1&type=slack&access_token=60588A4632FB5843E10E2A7C0E976B016E7386E068DCB8E335D1E5E42C1478E7",
+					"raw": "http://localhost:7720/listener/webhook?workflowId=&type=slack&access_token=not working",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -110,12 +136,12 @@
 					"port": "7720",
 					"path": [
 						"listener",
-						"webhhook"
+						"webhook"
 					],
 					"query": [
 						{
 							"key": "workflowId",
-							"value": "5f74d0293979cd04c7f8afa1"
+							"value": ""
 						},
 						{
 							"key": "type",
@@ -123,13 +149,206 @@
 						},
 						{
 							"key": "access_token",
-							"value": "60588A4632FB5843E10E2A7C0E976B016E7386E068DCB8E335D1E5E42C1478E7"
+							"value": "not working"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Webhook - CloudEvent - 200",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "414D62D9948A466A1386F1D1AC01E246947DA8683772EEA4192D7245F5BDE08D",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/cloudevents+json; charset=utf-8",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"id\": \"552c2076-e481-418f-ac5c-cbe4cbdf4cc1\",\n    \"type\": \"io.boomerang.eventing.custom\",\n    \"source\": \"/postman/local\",\n    \"specversion\": \"1.0\",\n    \"datacontenttype\": \"application/json\",\n    \"subject\": \"/60fe66fe522ba62b4b779f49/github\",\n    \"time\": \"2021-07-30T22:34:26.799Z\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:7720/listener/event",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "7720",
+					"path": [
+						"listener",
+						"event"
+					],
+					"query": [
+						{
+							"key": "type",
+							"value": "slack",
+							"disabled": true
+						},
+						{
+							"key": "access_token",
+							"value": "",
+							"disabled": true
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Webhook - CloudEvent - 403",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "This should not work",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/cloudevents+json; charset=utf-8",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"id\": \"552c2076-e481-418f-ac5c-cbe4cbdf4cc1\",\n    \"type\": \"io.boomerang.eventing.custom\",\n    \"source\": \"/postman/local\",\n    \"specversion\": \"1.0\",\n    \"datacontenttype\": \"application/json\",\n    \"subject\": \"/6101db5b3dafc25281ffe42c/postman\",\n    \"time\": \"2021-07-30T22:34:26.799Z\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:7720/listener/event",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "7720",
+					"path": [
+						"listener",
+						"event"
+					],
+					"query": [
+						{
+							"key": "type",
+							"value": "slack",
+							"disabled": true
+						},
+						{
+							"key": "access_token",
+							"value": "",
+							"disabled": true
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Webhook - Slack - Interactive",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "payload",
+							"value": "%7B%22type%22%3A%22shortcut%22%2C%22token%22%3A%22H3JpI2osywM0TsERaT3uBCOQ%22%2C%22action_ts%22%3A%221622696074.997119%22%2C%22team%22%3A%7B%22id%22%3A%22T27TLPNS1%22%2C%22domain%22%3A%22gbs-hcs%22%2C%22enterprise_id%22%3A%22E27SFGS2W%22%2C%22enterprise_name%22%3A%22IBM%22%7D%2C%22user%22%3A%7B%22id%22%3A%22W3FECR56F%22%2C%22username%22%3A%22twlawrie%22%2C%22team_id%22%3A%22T27TLPNS1%22%7D%2C%22is_enterprise_install%22%3Afalse%2C%22enterprise%22%3A%7B%22id%22%3A%22E27SFGS2W%22%2C%22name%22%3A%22IBM%22%7D%2C%22callback_id%22%3A%22esssc-create-issue%22%2C%22trigger_id%22%3A%222128550766389.75938804885.a50b7b03b18fe1fe3353d86cd4b0b36c%22%7D",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://localhost:7720/listener/webhook?workflowId=60b5d4a91817f67ac3c44bd1&type=slack&access_token=A26ABB1F850BA80A625E4A9878795BC17EAD1A8FB8F8232B96003036402F6C66",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "7720",
+					"path": [
+						"listener",
+						"webhook"
+					],
+					"query": [
+						{
+							"key": "workflowId",
+							"value": "60b5d4a91817f67ac3c44bd1"
+						},
+						{
+							"key": "type",
+							"value": "slack"
+						},
+						{
+							"key": "access_token",
+							"value": "A26ABB1F850BA80A625E4A9878795BC17EAD1A8FB8F8232B96003036402F6C66"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Webhook - WFE - GET",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Autho",
+						"value": "Bearer AF6ABA5F1C83F7D370B40EC5E20404BB57774D32BD2D61E0655A338721082A75",
+						"type": "text",
+						"disabled": true
+					}
+				],
+				"url": {
+					"raw": "http://localhost:7720/listener/webhook/wfe?workflowId=5f7e2c8969f04975a0fff357&access_token=B12140B3455DB1F54856D891F5F157694B95D7D445BA95BFF2D3201D14F328FA&workflowActivityId=5f84d367b871567a65532d21&topic=foobar",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "7720",
+					"path": [
+						"listener",
+						"webhook",
+						"wfe"
+					],
+					"query": [
+						{
+							"key": "workflowId",
+							"value": "5f7e2c8969f04975a0fff357"
+						},
+						{
+							"key": "access_token",
+							"value": "B12140B3455DB1F54856D891F5F157694B95D7D445BA95BFF2D3201D14F328FA"
+						},
+						{
+							"key": "workflowActivityId",
+							"value": "5f84d367b871567a65532d21"
+						},
+						{
+							"key": "topic",
+							"value": "foobar"
 						}
 					]
 				}
 			},
 			"response": []
 		}
-	],
-	"protocolProfileBehavior": {}
+	]
 }
