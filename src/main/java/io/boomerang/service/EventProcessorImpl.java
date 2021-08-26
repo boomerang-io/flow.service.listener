@@ -3,6 +3,7 @@ package io.boomerang.service;
 import java.net.URI;
 import java.time.ZonedDateTime;
 import java.util.UUID;
+import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,9 +11,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import com.fasterxml.jackson.databind.JsonNode;
-import io.boomerang.client.NatsClient;
 import io.boomerang.client.WorkflowClient;
+import io.boomerang.jetstream.JetstreamClient;
 import io.boomerang.model.CustomAttributeExtension;
 import io.cloudevents.CloudEvent;
 import io.cloudevents.json.Json;
@@ -27,78 +27,93 @@ public class EventProcessorImpl implements EventProcessor {
 
   private static final String TYPE_PREFIX = "io.boomerang.eventing.";
 
-  @Value("${eventing.nats.enabled}")
-  private Boolean natsEnabled;
-
   @Value("${eventing.auth.enabled}")
   private Boolean authorizationEnabled;
 
+  @Value("${eventing.jetstream.enabled}")
+  private Boolean jetstreamEnabled;
+
+  @Value("${eventing.jetstream.flow-subject-prefix}")
+  private String jetstreamMessageSubjectPrefix;
+
   @Autowired
-  private NatsClient natsClient;
+  private JetstreamClient jetstreamClient;
 
   @Autowired
   private WorkflowClient workflowClient;
 
   @Override
-  public ResponseEntity<CloudEvent<AttributesImpl, JsonNode>>  routeWebhookEvent(String token, String requestUri, String trigger, String workflowId,
-      JsonNode payload, String workflowActivityId, String topic, String status) {
-    //Validate Token and WorkflowID. Do first.
+  public ResponseEntity<CloudEvent<AttributesImpl, JsonNode>> routeWebhookEvent(String token,
+      String requestUri, String trigger, String workflowId, JsonNode payload,
+      String workflowActivityId, String topic, String status) {
+
+    // Validate Token and WorkflowID. Do first.
     HttpStatus accessStatus = checkAccess(workflowId, token);
+
     if (accessStatus != HttpStatus.OK) {
       return ResponseEntity.status(accessStatus).build();
     }
-    
+
     final String eventId = UUID.randomUUID().toString();
     final String eventType = TYPE_PREFIX + trigger;
     final URI uri = URI.create(requestUri);
     String subject = "/" + workflowId;
-    
-    //Validate WFE Attributes
+
+    // Validate WFE Attributes
     if ("wfe".equals(trigger) && workflowActivityId != null) {
       subject = subject + "/" + workflowActivityId + "/" + topic;
     } else if ("wfe".equals(trigger)) {
-      //WFE requires workflowActivityId
+
+      // WFE requires workflowActivityId
       return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
     }
-    
+
     if (!"failure".equals(status)) {
       status = "success";
     }
     CustomAttributeExtension statusCAE = new CustomAttributeExtension("status", status);
 
-    final CloudEventImpl<JsonNode> cloudEvent = CloudEventBuilder.<JsonNode>builder().withType(eventType).withExtension(statusCAE)
-        .withId(eventId).withSource(uri).withData(payload).withSubject(subject).withTime(ZonedDateTime.now()).build();
+    // @formatter:off
+    final CloudEventImpl<JsonNode> cloudEvent = CloudEventBuilder.<JsonNode>builder()
+        .withType(eventType)
+        .withExtension(statusCAE)
+        .withId(eventId)
+        .withSource(uri)
+        .withData(payload)
+        .withSubject(subject)
+        .withTime(ZonedDateTime.now())
+        .build();
+    // @formatter:on
 
-    final String jsonPayload = Json.encode(cloudEvent);
-    logger.debug("routeWebhookEvent() - CloudEvent: " + jsonPayload);
+    logger.debug("routeWebhookEvent() - CloudEvent: " + cloudEvent);
 
-    if (natsEnabled) {
-      natsClient.publish(eventId, jsonPayload);
-    } else {
-      workflowClient.executeWorkflowPut(cloudEvent);
-    }
+    forwardCloudEvent(cloudEvent);
 
     return ResponseEntity.ok().body(cloudEvent);
   }
 
   @Override
-  public ResponseEntity<CloudEvent<AttributesImpl, JsonNode>> routeCloudEvent(CloudEvent<AttributesImpl, JsonNode> cloudEvent, String token, URI uri) {
-    //Validate Token and WorkflowID. Do first.
+  public ResponseEntity<CloudEvent<AttributesImpl, JsonNode>> routeCloudEvent(
+      CloudEvent<AttributesImpl, JsonNode> cloudEvent, String token, URI uri) {
+
+    // Validate Token and WorkflowID. Do first.
     String subject = cloudEvent.getAttributes().getSubject().orElse("");
+
     if (!subject.startsWith("/") || cloudEvent.getData().isEmpty()) {
       return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
     }
+
     HttpStatus accessStatus = checkAccess(getWorkflowIdFromSubject(subject), token);
     if (accessStatus != HttpStatus.OK) {
       return ResponseEntity.status(accessStatus).build();
     }
-    
+
     logger.debug("routeCloudEvent() - CloudEvent Attributes: " + cloudEvent.getAttributes());
     logger.debug("routeCloudEvent() - CloudEvent Data: " + cloudEvent.getData().get());
 
     String eventId = UUID.randomUUID().toString();
     String eventType = TYPE_PREFIX + "custom";
-    
+
     String status = "success";
     if (cloudEvent.getExtensions() != null && cloudEvent.getExtensions().containsKey("status")) {
       String statusExtension = cloudEvent.getExtensions().get("status").toString();
@@ -108,15 +123,19 @@ public class EventProcessorImpl implements EventProcessor {
     }
     CustomAttributeExtension statusCAE = new CustomAttributeExtension("status", status);
 
-    final CloudEventImpl<JsonNode> forwardedCloudEvent = CloudEventBuilder.<JsonNode>builder().withType(eventType).withExtension(statusCAE)
-        .withId(eventId).withSource(uri).withData(cloudEvent.getData().get()).withSubject(subject)
-        .withTime(ZonedDateTime.now()).build();
+    // @formatter:off
+    final CloudEventImpl<JsonNode> forwardedCloudEvent = CloudEventBuilder.<JsonNode>builder()
+        .withType(eventType)
+        .withExtension(statusCAE)
+        .withId(eventId)
+        .withSource(uri)
+        .withData(cloudEvent.getData().get())
+        .withSubject(subject)
+        .withTime(ZonedDateTime.now())
+        .build();
+    // @formatter:on
 
-    if (natsEnabled) {
-      natsClient.publish(eventId, forwardedCloudEvent.getData().get().toString());
-    } else {
-      workflowClient.executeWorkflowPut(forwardedCloudEvent);
-    }
+    forwardCloudEvent(forwardedCloudEvent);
 
     return ResponseEntity.ok().body(forwardedCloudEvent);
   }
@@ -124,7 +143,8 @@ public class EventProcessorImpl implements EventProcessor {
   private HttpStatus checkAccess(String workflowId, String token) {
     if (authorizationEnabled) {
       logger.debug("checkAccess() - Token: " + token);
-      if (token != null && !token.isEmpty() && workflowId!= null&& !workflowId.isEmpty()) {
+
+      if (token != null && !token.isEmpty() && workflowId != null && !workflowId.isEmpty()) {
         return workflowClient.validateWorkflowToken(workflowId, token);
       } else {
         logger.error("checkAccess() - Error: no token provided.");
@@ -143,6 +163,30 @@ public class EventProcessorImpl implements EventProcessor {
     } else {
       logger.error("processCloudEvent() - Error: No workflow ID found in event");
       return "";
+    }
+  }
+
+  private void forwardCloudEvent(CloudEventImpl<JsonNode> cloudEvent) {
+    Boolean forwarded = false;
+
+    // If Jetstream is enabled, try to send the cloud event to it
+    if (jetstreamEnabled) {
+      String subject = jetstreamMessageSubjectPrefix + ".listener";
+      String message = Json.encode(cloudEvent);
+
+      // Publish the encoded cloud event
+      forwarded = jetstreamClient.publish(subject, message);
+
+      // If successfully published, return from method
+      if (forwarded) {
+        return;
+      }
+    }
+
+    if (!forwarded) {
+      // The code will get to this point only if Jetstream is disabled or Jetstream is enabled but
+      // for some reason it failed to publish the message
+      workflowClient.executeWorkflowPut(cloudEvent);
     }
   }
 }

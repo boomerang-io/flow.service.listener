@@ -43,7 +43,7 @@ public class EventController {
    * HTTP Webhook accepting Generic, Slack Events, and Dockerhub subtypes. For Slack and
    * Dockerhub will respond/perform verification challenges.
    * <p>
-   * <b>Note:</b> Only partially conformant to the specification.
+   * <b>Note:</b> Partial conformance to the specification.
    * 
    * <h4>Specifications</h4>
    * <ul>
