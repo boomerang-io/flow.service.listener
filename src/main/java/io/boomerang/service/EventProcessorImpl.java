@@ -27,16 +27,14 @@ public class EventProcessorImpl implements EventProcessor {
 
   private static final String TYPE_PREFIX = "io.boomerang.eventing.";
 
-  private static final String JETSTREAM_SUBJECT_SUFFIX = "cloudevent";
-
   @Value("${eventing.auth.enabled}")
   private Boolean authorizationEnabled;
 
   @Value("${eventing.jetstream.enabled}")
   private Boolean jetstreamEnabled;
 
-  @Value("${eventing.jetstream.flow-subject-prefix}")
-  private String jetstreamMessageSubjectPrefix;
+  @Value("${eventing.jetstream.stream.subject}")
+  private String jetstreamStreamSubject;
 
   @Autowired
   private JetstreamClient jetstreamClient;
@@ -173,11 +171,10 @@ public class EventProcessorImpl implements EventProcessor {
 
     // If Jetstream is enabled, try to send the cloud event to it
     if (jetstreamEnabled) {
-      String subject = jetstreamMessageSubjectPrefix + "." + JETSTREAM_SUBJECT_SUFFIX;
       String message = Json.encode(cloudEvent);
 
       // Publish the encoded cloud event
-      forwarded = jetstreamClient.publish(subject, message);
+      forwarded = jetstreamClient.publish(jetstreamStreamSubject, message);
 
       // If successfully published, return from method
       if (forwarded) {
