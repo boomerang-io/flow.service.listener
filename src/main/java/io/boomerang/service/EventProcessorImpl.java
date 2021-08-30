@@ -27,6 +27,8 @@ public class EventProcessorImpl implements EventProcessor {
 
   private static final String TYPE_PREFIX = "io.boomerang.eventing.";
 
+  private static final String JETSTREAM_SUBJECT_SUFFIX = "cloudevent";
+
   @Value("${eventing.auth.enabled}")
   private Boolean authorizationEnabled;
 
@@ -171,7 +173,7 @@ public class EventProcessorImpl implements EventProcessor {
 
     // If Jetstream is enabled, try to send the cloud event to it
     if (jetstreamEnabled) {
-      String subject = jetstreamMessageSubjectPrefix + ".listener";
+      String subject = jetstreamMessageSubjectPrefix + "." + JETSTREAM_SUBJECT_SUFFIX;
       String message = Json.encode(cloudEvent);
 
       // Publish the encoded cloud event
