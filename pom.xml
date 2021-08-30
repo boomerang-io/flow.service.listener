@@ -62,7 +62,7 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>net.boomerangplatform</groupId>
+			<groupId>io.boomerang</groupId>
 			<artifactId>lib-jetstream</artifactId>
 			<version>0.0.1</version>
 		</dependency>
