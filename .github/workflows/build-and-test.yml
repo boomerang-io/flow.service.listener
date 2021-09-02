@@ -37,4 +37,4 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }} # GITHUB_TOKEN is the default env for the password
         run: |
           less settings.xml
-          mvn clean package --batch-mode -Dversion.name=${{ steps.get_version.outputs.VERSION }}
+          mvn clean package --batch-mode -Dversion.name=${{ steps.get_version.outputs.VERSION }} -s settings.xml
