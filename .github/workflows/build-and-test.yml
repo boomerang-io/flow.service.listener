@@ -33,5 +33,7 @@ jobs:
         id: get_version
         run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/*\//}
       - name: Maven Package
+        env:
+          GITHUB_TOKEN: ${{ github.token }} # GITHUB_TOKEN is the default env for the password
         run: |
           mvn clean package --batch-mode -Dversion.name=${{ steps.get_version.outputs.VERSION }}
