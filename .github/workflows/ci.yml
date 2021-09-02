@@ -47,7 +47,7 @@ jobs:
         run: |
           mvn clean package --batch-mode -Dmaven.test.skip=true -Dversion.name=${{ steps.get_version.outputs.VERSION }} -s settings.xml
       - uses: actions/upload-artifact@v2
-        if: succeeded()
+        if: ${{ success() }}
         with:
           name: service-listener-${{ steps.get_version.outputs.VERSION }}.jar
           path: target/service-listener-${{ steps.get_version.outputs.VERSION }}.jar
