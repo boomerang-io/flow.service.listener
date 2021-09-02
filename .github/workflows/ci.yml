@@ -14,7 +14,8 @@ jobs:
     - name: Slack
       uses: 8398a7/action-slack@v3
       with:
-        status: ${{ job.status }}
+        status: 'Started'
+        icon_emoji: ':octocat:'
         fields: repo,message,commit,author,ref,workflow,took
       env:
         SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
@@ -43,7 +44,7 @@ jobs:
         if: ${{ always() }}
         with:
           status: ${{ job.status }}
-          fields: repo,message,commit,author,ref,workflow,took
+          fields: repo,message,commit,author,ref,workflow,took,job
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}   
   build:
@@ -76,7 +77,7 @@ jobs:
         if: ${{ always() }}
         with:
           status: ${{ job.status }}
-          fields: repo,message,commit,author,ref,workflow,took
+          fields: repo,message,commit,author,ref,workflow,took,job
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}   
   deploy:
@@ -116,6 +117,6 @@ jobs:
         if: ${{ always() }}
         with:
           status: ${{ job.status }}
-          fields: repo,message,commit,author,ref,workflow,took
+          fields: repo,message,commit,author,ref,workflow,took,job
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}   
