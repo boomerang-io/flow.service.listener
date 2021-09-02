@@ -149,7 +149,7 @@
 	<repositories>
 		<repository>
 			<id>github</id>
-			<url>https://maven.pkg.github.com/boomernag-io/flow.lib.streaming</url>
+			<url>https://maven.pkg.github.com/boomerang-io/flow.lib.streaming</url>
 		</repository>
 	</repositories>
 
