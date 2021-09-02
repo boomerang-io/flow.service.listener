@@ -8,17 +8,6 @@ on:
 env:
   VERSION: ${GITHUB_REF/refs\/*\//}
 jobs:
-  notify-start:
-    runs-on: ubuntu-latest
-    steps:
-    - name: Slack
-      uses: 8398a7/action-slack@v3
-      with:
-        status: 'Started'
-        icon_emoji: ':octocat:'
-        fields: repo,message,commit,author,ref,workflow,took
-      env:
-        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
   test:
     runs-on: ubuntu-latest
     steps:
