@@ -143,6 +143,7 @@
 				<filtering>true</filtering>
 			</resource>
 		</resources>
+		<finalName>${project.name}</finalName>
 	</build>
 	
 	<repositories>
