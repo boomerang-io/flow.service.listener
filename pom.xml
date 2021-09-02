@@ -10,7 +10,6 @@
 
 	<groupId>io.boomerang</groupId>
 	<artifactId>service-listener</artifactId>
-	<version>${version.name}</version>
 	<packaging>jar</packaging>
 	<name>service-listener</name>
 	<description>Boomerang Flow event listening service to trigger workflows</description>
