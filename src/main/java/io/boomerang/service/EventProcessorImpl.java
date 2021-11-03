@@ -2,6 +2,7 @@ package io.boomerang.service;
 
 import java.net.URI;
 import java.time.ZonedDateTime;
+import java.util.Optional;
 import java.util.UUID;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.logging.log4j.LogManager;
@@ -12,7 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import io.boomerang.client.WorkflowClient;
-import io.boomerang.jetstream.JetstreamClient;
+import io.boomerang.eventing.nats.jetstream.PubOnlyTunnel;
 import io.boomerang.model.CustomAttributeExtension;
 import io.cloudevents.CloudEvent;
 import io.cloudevents.json.Json;
@@ -30,14 +31,11 @@ public class EventProcessorImpl implements EventProcessor {
   @Value("${eventing.auth.enabled}")
   private Boolean authorizationEnabled;
 
-  @Value("${eventing.jetstream.enabled}")
-  private Boolean jetstreamEnabled;
-
   @Value("${eventing.jetstream.stream.subject}")
   private String jetstreamStreamSubject;
 
-  @Autowired
-  private JetstreamClient jetstreamClient;
+  @Autowired(required = false)
+  private Optional<PubOnlyTunnel> pubOnlyTunnel;
 
   @Autowired
   private WorkflowClient workflowClient;
@@ -167,23 +165,14 @@ public class EventProcessorImpl implements EventProcessor {
   }
 
   private void forwardCloudEvent(CloudEventImpl<JsonNode> cloudEvent) {
-    Boolean forwarded = false;
 
-    // If Jetstream is enabled, try to send the cloud event to it
-    if (jetstreamEnabled) {
-      String message = Json.encode(cloudEvent);
+    // If eventing is enabled, try to send the cloud event to it
+    try {
+      pubOnlyTunnel.orElseThrow().publish(jetstreamStreamSubject, Json.encode(cloudEvent));
 
-      // Publish the encoded cloud event
-      forwarded = jetstreamClient.publish(jetstreamStreamSubject, message);
+    } catch (Exception e) {
 
-      // If successfully published, return from method
-      if (forwarded) {
-        return;
-      }
-    }
-
-    if (!forwarded) {
-      // The code will get to this point only if Jetstream is disabled or Jetstream is enabled but
+      // The code will get to this point only if eventing is disabled or if it
       // for some reason it failed to publish the message
       workflowClient.executeWorkflowPut(cloudEvent);
     }
