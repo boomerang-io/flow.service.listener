@@ -1,4 +1,4 @@
-package io.boomerang;
+package io.boomerang.config;
 
 import java.util.List;
 
