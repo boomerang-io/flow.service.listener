@@ -62,8 +62,8 @@
 		</dependency>
 		<dependency>
 			<groupId>io.boomerang</groupId>
-			<artifactId>lib-jetstream</artifactId>
-			<version>0.0.2</version>
+			<artifactId>lib-eventing</artifactId>
+			<version>0.2.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
@@ -149,7 +149,7 @@
 	<repositories>
 		<repository>
 			<id>github</id>
-			<url>https://maven.pkg.github.com/boomerang-io/flow.lib.streaming</url>
+			<url>https://maven.pkg.github.com/boomerang-io/*</url>
 		</repository>
 	</repositories>
 
