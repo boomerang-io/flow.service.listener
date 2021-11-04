@@ -10,8 +10,8 @@
 - [Configuration](#configuration)
   - [Eventing](#eventing)
   - [Configuration Properties](#configuration-properties)
-    - [Required Components](#required-components)
-    - [Other Properties](#other-properties)
+    - [Required Component Properties](#required-component-properties)
+    - [Other Optional Properties](#other-optional-properties)
 - [Usage](#usage)
   - [Notes](#notes)
 - [Testing](#testing)
@@ -26,7 +26,7 @@ Boomerang Flow Listener is a Spring Boot microservice designed to consume events
 
 It also has domain specific endpoints to consume events from specific sources that may not meet this specification such as DockerHub and Slack webhooks.
 
-Events that are consumed will be translated to a CloudEvent and submitted to the Workflow Service via [NATS Jetstream][13] or HTTP depending what has been configured.
+Events that are consumed will be translated to a CloudEvent and submitted to the Workflow Service via HTTP or by publishing and consuming messages through [NATS Jetstream][13], depending on what has been configured.
 
 ## Dependencies
 
@@ -37,7 +37,7 @@ Events that are consumed will be translated to a CloudEvent and submitted to the
 3. Spring Boot Starter Log4j2 ([`spring-boot-starter-log4j2`][4])
 4. Spring Boot Starter Actuator ([`spring-boot-starter-actuator`][5])
 5. Spring Boot DevTools ([`spring-boot-devtools`][6])
-6. Boomerang NATS Jetstream Library ([`lib-jetstream`][7])
+6. Boomerang Eventing Library ([`lib-eventing`][7])
 7. CloudEvents API ([`cloudevents-api`][8])
 8. Springfox Boot Starter ([`springfox-boot-starter`][9])
 9. Apache HttpClient ([`httpclient`][10])
@@ -60,27 +60,27 @@ To configure the type of eventing, please see: [Configuration Properties](#other
 
 ### Configuration Properties
 
-#### Required Components
+#### Required Component Properties
 
-There are two main components that require to be configured to ensure an end-to-end working condition of the service, [NATS Jetstream][13] and Workflow Service:
+There are two main components that require to be configured to ensure an end-to-end working condition of the service, Workflow Service and [NATS Jetstream][13] related properties for [Eventing Library][7]:
 
-1. [NATS Jetstream][13] properties<sup id="ref-footnote-1">[1](#footnote-1)</sup>:
-   - `eventing.jetstream.server.url` - the URL for connecting to [NATS Jetstream][13].
-   - `eventing.jetstream.stream.name` - the name of the Jetstream stream to connect to. If the stream doesn't exists, it will be automatically created by `lib-jetstream`.
-   - `eventing.jetstream.stream.subject` - the subject name for the stream if this is created. Visit <https://docs.nats.io/jetstream/concepts/streams> for more information.
-   - `eventing.jetstream.consumer.push.name` - the name of the Jetstream push-based consumer to subscribe to. If the consumer doesn't exists, it will be automatically created by `lib-jetstream`.
-   - `eventing.jetstream.consumer.push.delivery-subject` - the subject to deliver observed messages from Jetstream. Visit <https://docs.nats.io/jetstream/concepts/consumers#deliversubject> for more information.
-   - `eventing.jetstream.consumer.pull.name` - the name of the Jetstream pull-based consumer to subscribe to. If the consumer doesn't exists, it will be automatically created by `lib-jetstream`.
-
-2. Workflow Service properties:
+1. Workflow Service properties:
    - `workflow.service.host` - the host where Workflow Service is running.
    - `workflow.service.url.execute` - the URL to connect to for Workflow Service.
    - `workflow.service.url.validateToken` - the URL used for token validation.
 
-#### Other Properties
+2. Eventing-related properties<sup id="ref-footnote-1">[1](#footnote-1)</sup>:
+   - `eventing.nats.server.urls` - a list of URL strings for connecting to one ore more [NATS][15] servers.
+   - `eventing.jetstream.stream.name` - the name of the Jetstream stream to connect to. If the stream doesn't exists, it will be automatically created by `lib-eventing`.
+   - `eventing.jetstream.stream.subject` - the subject name for the stream. Visit <https://docs.nats.io/jetstream/concepts/streams> for more information on stream subject naming convention.
+   - `eventing.jetstream.stream.storage-type` - the storage type of the Jetstream stream. This property is relevant only if the stream doesn't exist on the server and has to be created. Can be set only to `File` or `Memory`.
 
-- `eventing.jetstream.enabled` - defines the type of event forwarding - the events are forwarded to [NATS Jetstream][13] if enabled, to Workflow Service otherwise.
-- `eventing.auth.enabled` - enables authorization for exposed eventing APIs.
+#### Other Optional Properties
+
+- `eventing.enabled` - defines the type of event forwarding - the events are forwarded to [NATS Jetstream][13] if enabled, to Workflow Service otherwise. Defaults to `false`.
+- `eventing.auth.enabled` - enables authorization for exposed eventing APIs. Defaults to `false`
+- `eventing.nats.server.reconnect-wait-time` - the time to wait between reconnect attempts to the same server. Defaults to `PT10S`, meaning 10 seconds.
+- `eventing.nats.server.reconnect-max-attempts` - the maximum number of reconnect attempts. Use `0` to turn off auto-reconnect. Use `-1` to turn on infinite reconnects. Defaults to `-1`.
 
 ## Usage
 
@@ -100,7 +100,7 @@ Replace `<localhost:7720>` with the configured host and port on your computer.
 
 ### [NATS Jetstream][13] Integration
 
-If [eventing is enabled](#other-properties) on this service, it will attempt to connect to, and publish messages to [NATS Jetstream][13]. If you want to test the integration locally, create a server by running the following command ([Docker][14] required):
+If [eventing is enabled](#other-properties) in this service, it will attempt to connect to, and publish messages to [NATS Jetstream][13]. If you want to test the integration locally, create a server by running the following command ([Docker][14] required):
 
 ```bash
 docker run --detach --network host -p 4222:4222 --name nats-jetstream nats -js
@@ -124,7 +124,7 @@ All of our work is licenses under the [Apache License Version 2.0](https://www.a
 
 ---
 
-<span id="footnote-1">1.</span> For more information on how to configure `lib-jetstream`, please visit: [https://github.com/boomerang-io/flow.lib.streaming/tree/feature/jetstream][7]. [↩](#ref-footnote-1)
+<span id="footnote-1">1.</span> For more information on how to configure `lib-eventing`, please visit: [https://github.com/boomerang-io/lib.eventing/][7]. [↩](#ref-footnote-1)
 
 [1]: https://cloudevents.io "CloudEvents"
 [2]: https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter "Spring Boot Starter"
@@ -132,7 +132,7 @@ All of our work is licenses under the [Apache License Version 2.0](https://www.a
 [4]: https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-log4j2 "Spring Boot Starter Log4j2"
 [5]: https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-actuator "Spring Boot Starter Actuator"
 [6]: https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-devtools "Spring Boot DevTools"
-[7]: https://github.com/boomerang-io/flow.lib.streaming "Boomerang NATS Jetstream Library"
+[7]: https://github.com/boomerang-io/lib.eventing "Boomerang Eventing Library"
 [8]: https://mvnrepository.com/artifact/io.cloudevents/cloudevents-api "CloudEvents API"
 [9]: https://mvnrepository.com/artifact/io.springfox/springfox-boot-starter "SpringFox Boot Starter"
 [10]: https://mvnrepository.com/artifact/org.apache.httpcomponents/httpclient "Apache HttpClient"
@@ -140,3 +140,4 @@ All of our work is licenses under the [Apache License Version 2.0](https://www.a
 [12]: https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-engine "JUnit Jupiter Engine"
 [13]: https://docs.nats.io/jetstream/jetstream "About NATS Jetstream"
 [14]: https://www.docker.com "Docker"
+[15]: https://docs.nats.io "NATS Docs"
