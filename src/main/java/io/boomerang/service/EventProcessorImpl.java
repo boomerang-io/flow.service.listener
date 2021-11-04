@@ -28,7 +28,7 @@ public class EventProcessorImpl implements EventProcessor {
 
   private static final String TYPE_PREFIX = "io.boomerang.eventing.";
 
-  @Value("${eventing.auth.enabled}")
+  @Value("${eventing.auth.enabled:false}")
   private Boolean authorizationEnabled;
 
   @Value("${eventing.jetstream.stream.subject}")
