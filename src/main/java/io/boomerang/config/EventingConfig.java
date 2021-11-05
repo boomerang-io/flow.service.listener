@@ -15,6 +15,7 @@ import io.nats.client.api.StorageType;
 import io.nats.client.api.StreamConfiguration;
 
 @Configuration
+@ConditionalOnProperty(value = "eventing.enabled", havingValue = "true", matchIfMissing = false)
 public class EventingConfig {
 
   private ConnectionPrimer connectionPrimer;
@@ -38,7 +39,6 @@ public class EventingConfig {
   private String jetstreamStreamSubject;
 
   @Bean
-  @ConditionalOnProperty(value = "eventing.enabled", havingValue = "true", matchIfMissing = false)
   public PubOnlyTunnel pubOnlyTunnel() {
 
     // @formatter:off

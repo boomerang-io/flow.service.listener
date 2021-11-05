@@ -31,7 +31,7 @@ public class EventProcessorImpl implements EventProcessor {
   @Value("${eventing.auth.enabled:false}")
   private Boolean authorizationEnabled;
 
-  @Value("${eventing.jetstream.stream.subject}")
+  @Value("${eventing.jetstream.stream.subject:#{null}}")
   private String jetstreamStreamSubject;
 
   @Autowired(required = false)
