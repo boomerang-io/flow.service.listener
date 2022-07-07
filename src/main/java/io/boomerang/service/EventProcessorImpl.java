@@ -1,25 +1,26 @@
 package io.boomerang.service;
 
 import java.net.URI;
-import java.time.ZonedDateTime;
+import java.time.OffsetDateTime;
 import java.util.Optional;
 import java.util.UUID;
-import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.boomerang.client.WorkflowClient;
 import io.boomerang.eventing.nats.jetstream.PubOnlyTunnel;
-import io.boomerang.model.CustomAttributeExtension;
 import io.cloudevents.CloudEvent;
-import io.cloudevents.json.Json;
-import io.cloudevents.v1.AttributesImpl;
-import io.cloudevents.v1.CloudEventBuilder;
-import io.cloudevents.v1.CloudEventImpl;
+import io.cloudevents.core.builder.CloudEventBuilder;
+import io.cloudevents.core.provider.EventFormatProvider;
+import io.cloudevents.jackson.JsonFormat;
 
 @Service
 public class EventProcessorImpl implements EventProcessor {
@@ -41,7 +42,7 @@ public class EventProcessorImpl implements EventProcessor {
   private WorkflowClient workflowClient;
 
   @Override
-  public ResponseEntity<CloudEvent<AttributesImpl, JsonNode>> routeWebhookEvent(String token,
+  public ResponseEntity<CloudEvent> routeWebhookEvent(String token,
       String requestUri, String trigger, String workflowId, JsonNode payload,
       String workflowActivityId, String topic, String status) {
 
@@ -69,17 +70,17 @@ public class EventProcessorImpl implements EventProcessor {
     if (!"failure".equals(status)) {
       status = "success";
     }
-    CustomAttributeExtension statusCAE = new CustomAttributeExtension("status", status);
 
+    try {
     // @formatter:off
-    final CloudEventImpl<JsonNode> cloudEvent = CloudEventBuilder.<JsonNode>builder()
-        .withType(eventType)
-        .withExtension(statusCAE)
+    CloudEvent cloudEvent = CloudEventBuilder.v03()
         .withId(eventId)
         .withSource(uri)
-        .withData(payload)
         .withSubject(subject)
-        .withTime(ZonedDateTime.now())
+        .withType(eventType)
+        .withExtension("status", status)
+        .withTime(OffsetDateTime.now())
+        .withData(MediaType.APPLICATION_JSON_VALUE, new ObjectMapper().writer().writeValueAsBytes(payload))
         .build();
     // @formatter:on
 
@@ -88,16 +89,20 @@ public class EventProcessorImpl implements EventProcessor {
     forwardCloudEvent(cloudEvent);
 
     return ResponseEntity.ok().body(cloudEvent);
+  } catch (JsonProcessingException jpEx) {
+    logger.debug("JSON Processing failed for: " + payload);
+    return ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE).build();
+  }
   }
 
   @Override
-  public ResponseEntity<CloudEvent<AttributesImpl, JsonNode>> routeCloudEvent(
-      CloudEvent<AttributesImpl, JsonNode> cloudEvent, String token, URI uri) {
+  public ResponseEntity<CloudEvent> routeCloudEvent(
+      CloudEvent cloudEvent, String token, URI uri) {
 
     // Validate Token and WorkflowID. Do first.
-    String subject = cloudEvent.getAttributes().getSubject().orElse("");
+    String subject = cloudEvent.getSubject();
 
-    if (!subject.startsWith("/") || cloudEvent.getData().isEmpty()) {
+    if (!subject.startsWith("/") || cloudEvent.getData() == null) {
       return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
     }
 
@@ -106,30 +111,30 @@ public class EventProcessorImpl implements EventProcessor {
       return ResponseEntity.status(accessStatus).build();
     }
 
-    logger.debug("routeCloudEvent() - CloudEvent Attributes: " + cloudEvent.getAttributes());
-    logger.debug("routeCloudEvent() - CloudEvent Data: " + cloudEvent.getData().get());
+    logger.debug("routeCloudEvent() - CloudEvent Attributes: " + cloudEvent.getAttributeNames());
+    logger.debug("routeCloudEvent() - CloudEvent Data: " + cloudEvent.getData());
 
     String eventId = UUID.randomUUID().toString();
     String eventType = TYPE_PREFIX + "custom";
 
     String status = "success";
-    if (cloudEvent.getExtensions() != null && cloudEvent.getExtensions().containsKey("status")) {
-      String statusExtension = cloudEvent.getExtensions().get("status").toString();
+    if (cloudEvent.getExtensionNames() != null
+        && cloudEvent.getExtensionNames().contains("status")) {
+      String statusExtension = cloudEvent.getExtension("status").toString();
       if ("failure".equals(statusExtension)) {
         status = statusExtension;
       }
     }
-    CustomAttributeExtension statusCAE = new CustomAttributeExtension("status", status);
-
+    
     // @formatter:off
-    final CloudEventImpl<JsonNode> forwardedCloudEvent = CloudEventBuilder.<JsonNode>builder()
-        .withType(eventType)
-        .withExtension(statusCAE)
+    CloudEvent forwardedCloudEvent = CloudEventBuilder.v03()
         .withId(eventId)
         .withSource(uri)
-        .withData(cloudEvent.getData().get())
         .withSubject(subject)
-        .withTime(ZonedDateTime.now())
+        .withType(eventType)
+        .withExtension("status", status)
+        .withTime(OffsetDateTime.now())
+        .withData(cloudEvent.getData())
         .build();
     // @formatter:on
 
@@ -164,12 +169,12 @@ public class EventProcessorImpl implements EventProcessor {
     }
   }
 
-  private void forwardCloudEvent(CloudEventImpl<JsonNode> cloudEvent) {
-
+  private void forwardCloudEvent(CloudEvent cloudEvent) {
     // If eventing is enabled, try to send the cloud event to it
     try {
-      pubOnlyTunnel.orElseThrow().publish(jetstreamStreamSubject, Json.encode(cloudEvent));
-
+      String serializedCloudEvent = new String(EventFormatProvider.getInstance()
+          .resolveFormat(JsonFormat.CONTENT_TYPE).serialize(cloudEvent));
+      pubOnlyTunnel.orElseThrow().publish(jetstreamStreamSubject, serializedCloudEvent);
     } catch (Exception e) {
 
       // The code will get to this point only if eventing is disabled or if it
