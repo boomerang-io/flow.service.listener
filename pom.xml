@@ -19,8 +19,8 @@
 		<java.version>11</java.version>
 		<maven.compiler.source>${java.version}</maven.compiler.source>
 		<maven.compiler.target>${java.version}</maven.compiler.target>
-		<http.proxyHost/> <!-- set from env: proxy.boomerangplatform.net -->
-		<http.proxyPort/> <!-- set from env: 1080 -->
+		<http.proxyHost></http.proxyHost> <!-- set from env: proxy.boomerangplatform.net -->
+		<http.proxyPort></http.proxyPort> <!-- set from env: 1080 -->
 		<jackson.databind.version>2.13.2</jackson.databind.version>
 		<jacoco.out.path>${project.build.directory}</jacoco.out.path>
 		<sonar.jacoco.reportPaths>${jacoco.out.path}/jacoco.exec</sonar.jacoco.reportPaths>
@@ -78,7 +78,7 @@
 		<dependency>
 			<groupId>org.springdoc</groupId>
 			<artifactId>springdoc-openapi-ui</artifactId>
-			<version>1.6.8</version>
+			<version>1.6.6</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
