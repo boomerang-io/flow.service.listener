@@ -14,9 +14,8 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
-import com.fasterxml.jackson.databind.JsonNode;
 import io.boomerang.model.ValidateTokenRequest;
-import io.cloudevents.v1.CloudEventImpl;
+import io.cloudevents.CloudEvent;
 
 @Service
 public class WorkflowClientImpl implements WorkflowClient {
@@ -36,15 +35,17 @@ public class WorkflowClientImpl implements WorkflowClient {
   // TODO return a wfActivityId
   @Override
   @Async
-  public void executeWorkflowPut(CloudEventImpl<JsonNode> jsonPayload) {
+  public void executeWorkflowPut(CloudEvent jsonPayload) {
     final HttpHeaders headers = new HttpHeaders();
     headers.add("Content-Type", "application/cloudevents+json");
 
-    final HttpEntity<CloudEventImpl<JsonNode>> req = new HttpEntity<>(jsonPayload, headers);
+    final HttpEntity<CloudEvent> req = new HttpEntity<>(jsonPayload, headers);
 
-    LOGGER.debug("executeWorkflowPut() - Request Body Attributes: " + req.getBody().getAttributes().toString());
-    if (req.getBody().getData().isPresent()) {
-      LOGGER.debug("executeWorkflowPut() - Request Body Data: " + req.getBody().getData().get().toString());
+    LOGGER.debug(
+        "executeWorkflowPut() - Request Body Attributes: " + req.getBody().getAttributeNames());
+    if (req.getBody().getData() != null) {
+      LOGGER
+          .debug("executeWorkflowPut() - Request Body Data: " + req.getBody().getData().toString());
     }
 
     ResponseEntity<String> responseEntity = restTemplate.exchange(executeWorkflowUrl, HttpMethod.PUT, req,
