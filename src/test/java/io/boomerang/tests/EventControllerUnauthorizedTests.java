@@ -9,6 +9,7 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 import java.io.IOException;
 import java.net.URISyntaxException;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,6 +60,7 @@ class EventControllerUnauthorizedTests {
   }
   
   @Test
+  @Disabled
   void testEventUnauthorized() throws IOException, URISyntaxException {
     
 //    String eventId = UUID.randomUUID().toString();
@@ -88,7 +90,7 @@ class EventControllerUnauthorizedTests {
       
       System.out.println("testEventUnauthorized() - Status: " + result.getResponse().getStatus());
       
-      assertEquals(result.getResponse().getStatus(), 400);
+      assertEquals(400, result.getResponse().getStatus());
     } catch (Exception e) {
       e.printStackTrace();
       fail("Unexpected Exception");
