@@ -1,6 +1,6 @@
-> This service is now deprecated in favor of the Workflow Service v2 API. This service is no longer used in v4 of Boomerang Flow
+# [Deprecated] Boomerang Flow Listener Service <!-- omit in toc -->
 
-# Boomerang Flow Listener Service <!-- omit in toc -->
+> This service is now deprecated in favor of the Workflow Service v2 API. This service is no longer used in v4 of Boomerang Flow
 
 ## Table of Contents
 
