@@ -55,7 +55,7 @@ class EventControllerUnauthorizedTests {
     .andRespond(withUnauthorizedRequest());
   }
   
-  // @Test
+  @Test
   void testEventUnauthorized() throws IOException, URISyntaxException {
     
 //    String eventId = UUID.randomUUID().toString();
@@ -67,7 +67,7 @@ class EventControllerUnauthorizedTests {
         + "\"id\":\"1234\"," //
         + "\"specversion\":\"1.0\"," //
         + "\"type\":\"io.boomerang.eventing.custom\"," //
-        + "\"subject\":\"/5f74d0293979cd04c7f8afa1\"," //
+        + "\"subject\":\"5f74d0293979cd04c7f8afa1\"," //
         + "\"source\":\"/internal\"," //
         + "\"data\":{\"value\":\"test\"}}";
     
