@@ -9,6 +9,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -54,7 +55,7 @@ public class WorkflowClientImpl implements WorkflowClient {
   }
 
   @Override
-  public HttpStatus validateWorkflowToken(String workflowId, String token) {
+  public HttpStatusCode validateWorkflowToken(String workflowId, String token) {
     if (token != null && !token.isBlank()) {
       final HttpHeaders headers = new HttpHeaders();
       headers.add("Content-Type", "application/json");

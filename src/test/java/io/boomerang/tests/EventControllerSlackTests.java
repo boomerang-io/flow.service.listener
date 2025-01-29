@@ -11,7 +11,6 @@ import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,7 +19,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -34,7 +32,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @ActiveProfiles("local")
 @AutoConfigureMockMvc
 @SpringBootTest
-@ExtendWith(SpringExtension.class)
 class EventControllerSlackTests {
 
   @Value("${workflow.service.url.execute}")
@@ -162,7 +159,7 @@ class EventControllerSlackTests {
         + "\"id\":\"1234\"," //
         + "\"specversion\":\"1.0\"," //
         + "\"type\":\"io.boomerang.eventing.custom\"," //
-        + "\"subject\":\"/5f74d0293979cd04c7f8afa1\"," //
+        + "\"subject\":\"5f74d0293979cd04c7f8afa1\"," //
         + "\"source\":\"/internal\"," //
         + "\"data\":{\"value\":\"test\"}}";
     
@@ -174,7 +171,7 @@ class EventControllerSlackTests {
 
     try {
       MvcResult result = mockMvc.perform(MockMvcRequestBuilders.put("/listener/event")
-          .header("Authorization", "shouldnotwork")
+          .header("Authorization", "")
           .header("Content-Type", "application/cloudevents+json")
           .content(content)).andReturn();
       

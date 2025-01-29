@@ -4,7 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.util.Scanner;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -20,7 +20,7 @@ public final class TestUtil {
     ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
     File file = new File(classLoader.getResource(path).getFile());
 
-    return new String(Files.readAllBytes(Paths.get(file.getPath())), StandardCharsets.UTF_8);
+    return new String(Files.readAllBytes(Path.of(file.getPath())), StandardCharsets.UTF_8);
   }
 
   public static String parseToJson(final Object template) throws JsonProcessingException {

@@ -10,6 +10,7 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import io.boomerang.client.WorkflowClient;
@@ -46,7 +47,7 @@ public class EventProcessorImpl implements EventProcessor {
       String workflowActivityId, String topic, String status) {
 
     // Validate Token and WorkflowID. Do first.
-    HttpStatus accessStatus = checkAccess(workflowId, token);
+    HttpStatusCode accessStatus = checkAccess(workflowId, token);
 
     if (accessStatus != HttpStatus.OK) {
       return ResponseEntity.status(accessStatus).build();
@@ -101,7 +102,7 @@ public class EventProcessorImpl implements EventProcessor {
       return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
     }
 
-    HttpStatus accessStatus = checkAccess(getWorkflowIdFromSubject(subject), token);
+    HttpStatusCode accessStatus = checkAccess(getWorkflowIdFromSubject(subject), token);
     if (accessStatus != HttpStatus.OK) {
       return ResponseEntity.status(accessStatus).build();
     }
@@ -138,7 +139,7 @@ public class EventProcessorImpl implements EventProcessor {
     return ResponseEntity.ok().body(forwardedCloudEvent);
   }
 
-  private HttpStatus checkAccess(String workflowId, String token) {
+  private HttpStatusCode checkAccess(String workflowId, String token) {
     if (authorizationEnabled) {
       logger.debug("checkAccess() - Token: " + token);
 

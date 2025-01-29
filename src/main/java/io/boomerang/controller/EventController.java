@@ -1,7 +1,7 @@
 package io.boomerang.controller;
 
 import java.nio.charset.StandardCharsets;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;

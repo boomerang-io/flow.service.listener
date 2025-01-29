@@ -8,12 +8,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import javax.net.ssl.SSLContext;
-import org.apache.http.HttpHost;
-import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
-import org.apache.http.conn.ssl.TrustStrategy;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.impl.client.HttpClients;
+import org.apache.hc.core5.http.HttpHost;
+import org.apache.hc.client5.http.ssl.SSLConnectionSocketFactory;
+import org.apache.hc.core5.ssl.TrustStrategy;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuilder;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -40,7 +41,7 @@ public class RestConfig {
       HttpComponentsClientHttpRequestFactory clientHttpRequestFactory = new HttpComponentsClientHttpRequestFactory(
           HttpClientBuilder.create()
               .setProxy(
-                  new HttpHost(this.boomerangProxyHost.get(), Integer.valueOf(this.boomerangProxyPort.get()), "http"))
+                  new HttpHost("http", this.boomerangProxyHost.get(), Integer.valueOf(this.boomerangProxyPort.get())))
               .build());
       return new RestTemplate(clientHttpRequestFactory);
     }
@@ -53,11 +54,14 @@ public class RestConfig {
       throws KeyManagementException, NoSuchAlgorithmException, KeyStoreException {
 
     final TrustStrategy acceptingTrustStrategy = (X509Certificate[] chain, String authType) -> true;
-    final SSLContext sslContext = org.apache.http.ssl.SSLContexts.custom()
+    final SSLContext sslContext = org.apache.hc.core5.ssl.SSLContexts.custom()
         .loadTrustMaterial(null, acceptingTrustStrategy).build();
 
     final SSLConnectionSocketFactory csf = new SSLConnectionSocketFactory(sslContext);
-    final CloseableHttpClient httpClient = HttpClients.custom().setSSLSocketFactory(csf).build();
+    final CloseableHttpClient httpClient = HttpClients.custom()
+    .setConnectionManager(
+        PoolingHttpClientConnectionManagerBuilder.create()
+            .setSSLSocketFactory(csf).build()).build();
     final HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory();
     requestFactory.setHttpClient(httpClient);
     final RestTemplate restTemplate = new RestTemplate(requestFactory);
