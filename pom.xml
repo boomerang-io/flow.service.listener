@@ -65,7 +65,7 @@
 		<dependency>
 			<groupId>io.boomerang</groupId>
 			<artifactId>lib-eventing</artifactId>
-			<version>0.4.5</version>
+			<version>0.2.5</version>
 			<exclusions>
 				<exclusion>
 					<groupId>junit</groupId>
@@ -168,9 +168,8 @@
 
 	<repositories>
 		<repository>
-			<id>github</id>
-			<url>https://maven.pkg.github.com/boomerang-io/*</url>
+			<id>boomeranglib-maven</id>
+			<url>https://tools.boomerangplatform.net/artifactory/boomeranglib-maven</url>
 		</repository>
 	</repositories>
-
 </project>
