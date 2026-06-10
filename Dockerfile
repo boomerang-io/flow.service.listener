@@ -1,12 +1,4 @@
-FROM eclipse-temurin:17.0.19_10-jre-ubi10-minimal
-
-RUN if command -v microdnf >/dev/null 2>&1; then \
-        microdnf update -y && microdnf install -y binutils && microdnf clean all; \
-    elif command -v dnf >/dev/null 2>&1; then \
-        dnf -y update && dnf -y install binutils && dnf clean all; \
-    else \
-        echo "No supported package manager found" && exit 1; \
-    fi
+FROM eclipse-temurin:17-jre-alpine
     
 ENV JAVA_OPTS=""
 ENV BMRG_HOME=/opt/boomerang
