@@ -24,7 +24,7 @@
 		<http.proxyHost></http.proxyHost> <!-- set from env: proxy.boomerangplatform.net -->
 		<http.proxyPort></http.proxyPort> <!-- set from env: 1080 -->
 		<jackson.databind.version>2.13.2</jackson.databind.version>
-		<jackson-bom.version>2.18.6</jackson-bom.version>
+		<jackson-bom.version>2.18.8</jackson-bom.version>
 		<jacoco.out.path>${project.build.directory}</jacoco.out.path>
 		<sonar.jacoco.reportPaths>${jacoco.out.path}/jacoco.exec</sonar.jacoco.reportPaths>
 		<jacoco.version>0.8.12</jacoco.version>
@@ -47,7 +47,17 @@
 			<dependency>
 				<groupId>org.apache.tomcat.embed</groupId>
 				<artifactId>tomcat-embed-core</artifactId>
-				<version>11.0.22</version>
+				<version>11.0.24</version>
+			</dependency>
+			<dependency>
+				<groupId>io.micrometer</groupId>
+				<artifactId>micrometer-core</artifactId>
+				<version>1.15.12</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.httpcomponents.core5</groupId>
+				<artifactId>httpcore5-h2</artifactId>
+				<version>5.4.3</version>
 			</dependency>
 			<dependency>
 				<groupId>org.springframework</groupId>
@@ -71,8 +81,23 @@
 				<version>3.18.0</version>
 			</dependency>
 			<dependency>
+				<groupId>com.fasterxml.jackson.core</groupId>
+				<artifactId>jackson-databind</artifactId>
+				<version>${jackson-bom.version}</version>
+			</dependency>
+			<dependency>
 				<groupId>org.springframework</groupId>
 				<artifactId>spring-core</artifactId>
+				<version>6.2.19</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-expression</artifactId>
+				<version>6.2.19</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-webmvc</artifactId>
 				<version>6.2.19</version>
 			</dependency>
 		</dependencies>
