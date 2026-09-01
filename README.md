@@ -1,3 +1,14 @@
+> [!IMPORTANT]
+> ## 🔧 v3 maintenance only
+> This repository is the event listener of **Boomerang Flow v3**. It is kept for v3 security and compatibility fixes —
+> IBM maintains that line on the `essentials_v3_stable` and `cve_fix` branches. v4 development here has ended.
+>
+> **Boomerang Flow v5 is a monorepo**: inbound events are handled inside [`service-core`](https://github.com/boomerang-io/flow/tree/feat-v5/service-core) — `POST /api/v2/event` (CloudEvents) and `POST /api/v2/webhook`; there is no separate listener.
+> New bugs and features go to [boomerang-io/flow issues](https://github.com/boomerang-io/flow/issues/new/choose);
+> only v3-line fixes belong here.
+
+---
+
 # [Deprecated] Boomerang Flow Listener Service <!-- omit in toc -->
 
 > This service is now deprecated in favor of the Workflow Service v2 API. This service is no longer used in v4 of Boomerang Flow
