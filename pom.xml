@@ -46,15 +46,27 @@
 				<scope>import</scope>
 			</dependency>
 			<dependency>
-				<groupId>com.fasterxml.jackson.core</groupId>
-				<artifactId>jackson-core</artifactId>
-				<version>2.21.3</version>
-			</dependency>
-			<dependency>
-				<groupId>com.fasterxml.jackson.core</groupId>
-				<artifactId>jackson-databind</artifactId>
-				<version>2.21.3</version>
-			</dependency>
+            	<groupId>com.fasterxml.jackson.core</groupId>
+            	<artifactId>jackson-core</artifactId>
+            	<version>2.21.4</version>
+        	</dependency>
+        	<dependency>
+        	    <groupId>com.fasterxml.jackson.core</groupId>
+        	    <artifactId>jackson-databind</artifactId>
+        	    <version>2.21.4</version>
+        	</dependency>
+        
+        	<!-- Jackson 3.x (Spring Boot 4 default) -->
+        	<dependency>
+        	    <groupId>tools.jackson.core</groupId>
+        	    <artifactId>jackson-core</artifactId>
+            	<version>3.1.4</version>
+        	</dependency>
+        	<dependency>
+            	<groupId>tools.jackson.core</groupId>
+            	<artifactId>jackson-databind</artifactId>
+            	<version>3.1.4</version>
+        	</dependency>
 			<dependency>
 				<groupId>org.codehaus.plexus</groupId>
 				<artifactId>plexus-utils</artifactId>
