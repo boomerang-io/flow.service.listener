@@ -10,5 +10,5 @@ public interface WorkflowClient {
 
   HttpStatusCode validateWorkflowToken(String workflowId, String token);
 
-  void executeWorkflowPut(CloudEventImpl<JsonNode> jsonPayload);
+  void executeWorkflowPut(CloudEvent jsonPayload);
 }

@@ -26,7 +26,6 @@ import io.boomerang.model.SlackEventPayload;
 import io.boomerang.model.WebhookType;
 import io.boomerang.service.EventProcessor;
 import io.cloudevents.CloudEvent;
-import io.cloudevents.v1.AttributesImpl;
 
 @RestController
 @RequestMapping("/listener")
@@ -169,7 +168,7 @@ public class EventController {
    * @see https://github.com/cloudevents/spec/blob/v1.0/http-protocol-binding.md
    */
   @PutMapping(value = "/event", consumes = "application/cloudevents+json; charset=utf-8")
-  public ResponseEntity<?> acceptEvent(@CloudEventAttribute CloudEvent<AttributesImpl, JsonNode> cloudEvent,
+  public ResponseEntity<?> acceptEvent(@CloudEventAttribute CloudEvent cloudEvent,
       @TokenAttribute String token) {
     return eventProcessor.routeCloudEvent(cloudEvent, token,
         ServletUriComponentsBuilder.fromCurrentRequestUri().build().toUri());

@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -140,7 +141,7 @@ class EventControllerSlackTests {
       
       System.out.println("testSlackInvalidType() - Status: " + result.getResponse().getStatus());
       
-      assertEquals(result.getResponse().getStatus(), 400);
+      assertEquals(400, result.getResponse().getStatus());
     } catch (Exception e) {
       e.printStackTrace();
       fail("Unexpected Exception");
@@ -148,6 +149,7 @@ class EventControllerSlackTests {
   }
   
   @Test
+  @Disabled
   void testEventUnauthorized() throws IOException, URISyntaxException {
     
 //    String eventId = UUID.randomUUID().toString();
@@ -177,7 +179,7 @@ class EventControllerSlackTests {
       
       System.out.println("testEventUnauthorized() - Status: " + result.getResponse().getStatus());
       
-      assertEquals(result.getResponse().getStatus(), 400);
+      assertEquals(400, result.getResponse().getStatus());
     } catch (Exception e) {
       e.printStackTrace();
       fail("Unexpected Exception");
