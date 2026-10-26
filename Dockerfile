@@ -1,7 +1,4 @@
-FROM eclipse-temurin:17-jdk-alpine
-
-RUN apk update && \
-    apk upgrade --no-cache binutils
+FROM eclipse-temurin:17-jre-alpine
     
 ENV JAVA_OPTS=""
 ENV BMRG_HOME=/opt/boomerang
