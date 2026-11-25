@@ -48,10 +48,13 @@ public class WorkflowClientImpl implements WorkflowClient {
       LOGGER.debug("executeWorkflowPut() - Request Body Data: " + req.getBody().getData().get().toString());
     }
 
-    ResponseEntity<String> responseEntity = restTemplate.exchange(executeWorkflowUrl, HttpMethod.PUT, req,
-        String.class);
-
-    LOGGER.debug("executeWorkflowPut() - Status Code: " + responseEntity.getStatusCode());
+    try {
+      ResponseEntity<String> responseEntity = restTemplate.exchange(executeWorkflowUrl, HttpMethod.PUT, req,
+          String.class);
+      LOGGER.debug("executeWorkflowPut() - Status Code: " + responseEntity.getStatusCode());
+    } catch (Exception e) {
+      LOGGER.error("executeWorkflowPut() - Failed to forward cloud event to workflow service: " + e.getMessage(), e);
+    }
   }
 
   @Override

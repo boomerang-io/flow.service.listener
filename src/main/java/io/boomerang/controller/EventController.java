@@ -57,7 +57,7 @@ public class EventController {
    * <h4>Sample</h4>
    * <code>/webhook?workflowId={workflowId}&type={generic|slack|dockerhub}&access_token={access_token}</code>
    */
-  @PostMapping(value = "/webhook", consumes = "application/json; charset=utf-8")
+  @PostMapping(value = "/webhook", consumes = { "application/json", "application/json; charset=utf-8" })
   public ResponseEntity<?> acceptWebhookEvent(HttpServletRequest request, @RequestParam String workflowId,
       @RequestParam WebhookType type, @RequestBody JsonNode payload, @TokenAttribute String token) {    
     switch (type) {
@@ -137,7 +137,7 @@ public class EventController {
    * <h4>Sample</h4>
    * <code>/webhook/wfe?workflowId={workflowId}&access_token={access_token}&topic={topic}&workflowActivityId={workflowActivityId}</code>
    */
-  @PostMapping(value = "/webhook/wfe", consumes = "application/json; charset=utf-8")
+  @PostMapping(value = "/webhook/wfe", consumes = { "application/json", "application/json; charset=utf-8" })
   public ResponseEntity<?> acceptWaitForEvent(HttpServletRequest request, @RequestParam String workflowId,
       @RequestParam String workflowActivityId, @RequestParam String topic, @RequestParam(defaultValue = "success") String status,
       @RequestBody JsonNode payload, @TokenAttribute String token) {
